@@ -2,6 +2,11 @@
 name = "todoist-rs"
 version = "0.1.0"
 authors = ["Ian Shehadeh <IanShehadeh2020@gmail.com>"]
+license = "Apache 2.0 AND MIT"
+homepage = "https://github.com/IanS5/todoist-rs"
+repository = "https://github.com/IanS5/todoist-rs"
+description = "Rust wrapper around the todoist sync API"
+readme = "README.md"
 
 [dependencies]
 reqwest = "*"
