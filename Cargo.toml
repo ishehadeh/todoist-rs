@@ -1,5 +1,5 @@
 [package]
-name = "todoist-rs"
+name = "todoist"
 version = "0.1.0"
 authors = ["Ian Shehadeh <IanShehadeh2020@gmail.com>"]
 license = "Apache-2.0 AND MIT"
