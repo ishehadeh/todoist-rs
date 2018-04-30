@@ -4,7 +4,9 @@ use std::fmt;
 use std::cmp;
 
 
-/// This type is for convenience. Because the Todoist API specifies some fields as integers,
+/// Convenience type, acts as an int, but can be converted to a bool.
+///
+/// Because the Todoist API specifies some fields as integers,
 /// but their value is always boolean this type will serialize and deserialize as an `isize`, 
 /// while converting to and from both an isize and bool.
 #[derive(Serialize, Deserialize, Default, Clone)]
