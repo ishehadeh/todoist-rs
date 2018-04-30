@@ -12,6 +12,8 @@ mod types;
 #[cfg(test)] mod tests;
 
 pub use types::*;
+pub use resource::*;
+
 use std::collections::HashMap;
 
 #[macro_use] extern crate serde_derive;
@@ -113,54 +115,59 @@ pub struct Client {
     last_sync: String,
 }
 
-/// Commands is a batch of commands
-pub struct Commands {
+/// A transactions is a batch of commands that can be sent to Todoist in a signle request
+pub struct Transactions<'a> {
     commands: Vec<command::Command>,
+    client: &'a mut Client,
 }
 
-impl Commands {
-    fn create<T : command::Create>(&mut self, v : T) -> &mut Self {
+impl<'a> Transactions<'a> {
+    pub fn create<T : command::Create>(mut self, v : T) -> Self {
         self.commands.push(v.create());
         self
     }
 
-    fn delete<T : command::Delete>(&mut self, v : T) -> &mut Self {
+    pub fn delete<T : command::Delete>(mut self, v : T) -> Self {
         self.commands.push(v.delete());
         self
     }
 
-    fn archive<T : command::Archive>(&mut self, v : T) -> &mut Self {
+    pub fn archive<T : command::Archive>(mut self, v : T) -> Self {
         self.commands.push(v.archive());
         self
     }
 
-    fn unarchive<T : command::Archive>(&mut self, v : T) -> &mut Self {
+    pub fn unarchive<T : command::Archive>(mut self, v : T) -> Self {
         self.commands.push(v.unarchive());
         self
     }
 
-    fn update<T : command::Update>(&mut self, v : T) -> &mut Self {
+    pub fn update<T : command::Update>(mut self, v : T) -> Self {
         self.commands.push(v.update());
         self
     }
 
-    fn close<T : command::Close>(&mut self, v : T) -> &mut Self {
+    pub fn close<T : command::Close>(mut self, v : T) -> Self {
         self.commands.push(v.close());
         self
     }
 
-    fn complete<T : command::Complete>(&mut self, v : T) -> &mut Self {
+    pub fn complete<T : command::Complete>(mut self, v : T) -> Self {
         self.commands.push(v.complete());
         self
     }
 
-    fn uncomplete<T : command::Complete>(&mut self, v : T) -> &mut Self {
+    pub fn uncomplete<T : command::Complete>(mut self, v : T) -> Self {
         self.commands.push(v.uncomplete());
         self
     }
+
+    pub fn commit(self) {
+        self.client.send(self.commands.as_slice());
+    }
 }
 
-impl Client {
+impl<'a> Client {
 
     /// Create a new with todoist API client with auth token `tok`
     pub fn new(tok: &str) -> Client {
@@ -201,13 +208,10 @@ impl Client {
         Ok(res)
     }
 
-    pub fn commit(&mut self, cmds: Commands) -> Result<CommandResponse, types::Error> {
-        self.send(cmds.commands.as_slice())
-    }
-
-    pub fn begin(&mut self) -> Commands {
-        Commands {
-            commands: Vec::new()
+    pub fn begin(&'a mut self) -> Transactions<'a> {
+        Transactions {
+            client: self,
+            commands: Vec::new(),
         }
     }
 }

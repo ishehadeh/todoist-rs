@@ -45,6 +45,14 @@ pub struct Project {
     pub inbox_team : bool,
 }
 
+impl Project {
+    pub fn new<T : AsRef<str>>(name : T) -> Project {
+        let mut proj = Project::default();
+        proj.name = name.as_ref().to_string();
+        proj
+    }
+}
+
 impl command::Create for Project {
     fn create(self) -> command::Command {
         command::Command {

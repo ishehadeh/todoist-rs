@@ -44,5 +44,9 @@ fn main() {
             Ok(v) => v,
             Err(_) => query_api_key().unwrap(),
         };
-    let client = todoist::Client::new(&api_key);
+    let mut client = todoist::Client::new(&api_key);
+
+    client.begin()
+        .create(todoist::Project::new("Hello World!"))
+        .commit();
 }
