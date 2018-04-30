@@ -1,5 +1,5 @@
 [package]
-name = "todoist-api"
+name = "todoist-rs"
 version = "0.1.0"
 authors = ["Ian Shehadeh <IanShehadeh2020@gmail.com>"]
 
