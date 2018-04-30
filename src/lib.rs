@@ -113,6 +113,53 @@ pub struct Client {
     last_sync: String,
 }
 
+/// Commands is a batch of commands
+pub struct Commands {
+    commands: Vec<command::Command>,
+}
+
+impl Commands {
+    fn create<T : command::Create>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.create());
+        self
+    }
+
+    fn delete<T : command::Delete>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.delete());
+        self
+    }
+
+    fn archive<T : command::Archive>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.archive());
+        self
+    }
+
+    fn unarchive<T : command::Archive>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.unarchive());
+        self
+    }
+
+    fn update<T : command::Update>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.update());
+        self
+    }
+
+    fn close<T : command::Close>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.close());
+        self
+    }
+
+    fn complete<T : command::Complete>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.complete());
+        self
+    }
+
+    fn uncomplete<T : command::Complete>(&mut self, v : &T) -> &mut Self {
+        self.commands.push(v.uncomplete());
+        self
+    }
+}
+
 impl Client {
 
     /// Create a new with todoist API client with auth token `tok`
@@ -144,8 +191,7 @@ impl Client {
     }
 
     /// Update a user's resources
-    pub fn send(&mut self, cmd: &[&command::Command]) -> Result<CommandResponse, types::Error> {
-        println!("{}", serde_json::to_string(cmd)?);
+    pub fn send(&mut self, cmd: &[command::Command]) -> Result<CommandResponse, types::Error> {
         let res : CommandResponse = self.client.post("http://todoist.com/api/v7/sync")
             .form(&[("token", self.token.clone()), 
                     ("commands", serde_json::to_string(cmd)?)])
@@ -153,5 +199,15 @@ impl Client {
             .json()?;
 
         Ok(res)
+    }
+
+    pub fn commit(&mut self, cmds: Commands) -> Result<CommandResponse, types::Error> {
+        self.send(cmds.commands.as_slice())
+    }
+
+    pub fn begin(&mut self) -> Commands {
+        Commands {
+            commands: Vec::new()
+        }
     }
 }

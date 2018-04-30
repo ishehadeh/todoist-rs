@@ -66,7 +66,3 @@ pub trait Archive {
     fn archive(self) -> Command;
     fn unarchive(self) -> Command;
 }
-
-pub trait Unarchive {
-    fn update(self) -> Command;
-}
