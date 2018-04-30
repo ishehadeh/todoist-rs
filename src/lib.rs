@@ -119,42 +119,42 @@ pub struct Commands {
 }
 
 impl Commands {
-    fn create<T : command::Create>(&mut self, v : &T) -> &mut Self {
+    fn create<T : command::Create>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.create());
         self
     }
 
-    fn delete<T : command::Delete>(&mut self, v : &T) -> &mut Self {
+    fn delete<T : command::Delete>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.delete());
         self
     }
 
-    fn archive<T : command::Archive>(&mut self, v : &T) -> &mut Self {
+    fn archive<T : command::Archive>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.archive());
         self
     }
 
-    fn unarchive<T : command::Archive>(&mut self, v : &T) -> &mut Self {
+    fn unarchive<T : command::Archive>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.unarchive());
         self
     }
 
-    fn update<T : command::Update>(&mut self, v : &T) -> &mut Self {
+    fn update<T : command::Update>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.update());
         self
     }
 
-    fn close<T : command::Close>(&mut self, v : &T) -> &mut Self {
+    fn close<T : command::Close>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.close());
         self
     }
 
-    fn complete<T : command::Complete>(&mut self, v : &T) -> &mut Self {
+    fn complete<T : command::Complete>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.complete());
         self
     }
 
-    fn uncomplete<T : command::Complete>(&mut self, v : &T) -> &mut Self {
+    fn uncomplete<T : command::Complete>(&mut self, v : T) -> &mut Self {
         self.commands.push(v.uncomplete());
         self
     }
