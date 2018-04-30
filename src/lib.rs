@@ -9,9 +9,10 @@ pub mod command;
 pub mod resource;
 
 mod types;
-mod tests;
+#[cfg(test)] mod tests;
 
 pub use types::*;
+use std::collections::HashMap;
 
 #[macro_use] extern crate serde_derive;
 
@@ -66,13 +67,25 @@ pub enum ResourceType {
     NotificationSettings, // TODO
 }
 
+#[derive(Serialize, Deserialize, Default, Debug)]
+#[serde(default)]
+pub struct ActionErrorObject {
+    pub error_code : isize,
+    pub error : String,
+}
 
-
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+pub enum ActionStatus {
+    Ok(String),
+    Error(ActionErrorObject),
+} 
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(default)]
 pub struct CommandResponse {
-
+    pub sync_status      : HashMap<uuid::Uuid, ActionStatus>,
+    pub temp_id_mappings : HashMap<uuid::Uuid, ID>,
 }
 
 
@@ -132,9 +145,10 @@ impl Client {
 
     /// Update a user's resources
     pub fn send(&mut self, cmd: &[&command::Command]) -> Result<CommandResponse, types::Error> {
+        println!("{}", serde_json::to_string(cmd)?);
         let res : CommandResponse = self.client.post("http://todoist.com/api/v7/sync")
             .form(&[("token", self.token.clone()), 
-                    ("resource_types", serde_json::to_string(cmd)?)])
+                    ("commands", serde_json::to_string(cmd)?)])
             .send()?
             .json()?;
 
