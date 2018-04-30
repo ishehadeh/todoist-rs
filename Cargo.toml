@@ -1,0 +1,13 @@
+[package]
+name = "todoist-api"
+version = "0.1.0"
+authors = ["Ian Shehadeh <IanShehadeh2020@gmail.com>"]
+
+[dependencies]
+reqwest = "*"
+uuid = {version = "*", features = ["v4", "serde"] }
+serde = "*"
+serde_derive = "*"
+serde_json = "*"
+erased-serde = "0.3"
+chrono = "*"
