@@ -82,7 +82,7 @@ fn main() {
             new_proj.item_order  = matches.value_of("order").unwrap().parse().unwrap();
             new_proj.color       = matches.value_of("color").unwrap().parse().unwrap();
             new_proj.is_favorite = todoist::IntBool::from(matches.is_present("favorite"));
-            tx = tx.create(new_proj);
+            tx.create(new_proj);
         }
     }
     tx.commit().unwrap();
