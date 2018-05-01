@@ -178,12 +178,12 @@ impl<'a> Transaction<'a> {
 
 impl<'a> Client {
 
-    /// Create a new with todoist API client with auth token `tok`
+    /// Create a new client with a Todoist API key
     pub fn new(tok: &str) -> Client {
         Client::new_with_sync(tok, "*")
     }
     
-    /// create a new client with a sync token
+    /// create a new client with a sync token and API key
     pub fn new_with_sync(tok: &str, sync_tok: &str) -> Client {
         Client {
             client: reqwest::Client::new(),

@@ -7,7 +7,7 @@ use std::io::{self, BufRead, Write};
 use preferences::{AppInfo, Preferences, PreferencesError};
 use clap::{App};
 
-const APP_INFO: AppInfo = AppInfo{name: "todoist", author: "Ian Shehadeh"};
+const APP_INFO: AppInfo = AppInfo{name: "todoist", author: "Ian Shehadeh <IanShehadeh2020@gmail.com>"};
 
 fn query_api_key() -> Result<String, PreferencesError> {
     let stdout = io::stdout();
