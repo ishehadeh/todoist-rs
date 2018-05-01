@@ -3,11 +3,15 @@ use serde_json;
 
 use std::fmt;
 use std::error;
+use CommandErrors;
+
+
 
 #[derive(Debug)]
 pub enum Error {
     Request(reqwest::Error),
     Serialize(serde_json::Error),
+    ApiError(CommandErrors),
 }
 
 
@@ -23,11 +27,19 @@ impl From<serde_json::Error> for Error {
     }
 }
 
+impl From<CommandErrors> for Error {
+    fn from(e : CommandErrors) -> Error {
+        Error::ApiError(e)
+    }
+}
+
+
 impl fmt::Display for Error {
     fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
         match self {
             &Error::Request(ref e) => write!(f, "{}", e),
             &Error::Serialize(ref e) => write!(f, "{}", e),
+            &Error::ApiError(ref e) => write!(f, "{}", e),
         }
     }
 }
@@ -36,7 +48,9 @@ impl error::Error for Error {
     fn description(&self) -> &'static str {
         match self {
             &Error::Request(_) => "request failed",
-            &Error::Serialize(_) => "invalid json",
+            &Error::Serialize(_) => "serialization failed",
+            &Error::ApiError(_) => "api error",
+
         }
     }
 }

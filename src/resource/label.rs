@@ -1,4 +1,3 @@
-use std::fmt;
 use types::*;
 use command;
 use uuid::Uuid;

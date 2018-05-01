@@ -1,10 +1,6 @@
-use std::fmt;
 use types::*;
 use command;
 use uuid::Uuid;
-
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
-use serde::ser::SerializeSeq;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(default)]

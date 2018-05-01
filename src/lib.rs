@@ -15,6 +15,8 @@ pub use types::*;
 pub use resource::*;
 
 use std::collections::HashMap;
+use std::fmt;
+use std::error::Error;
 
 #[macro_use] extern crate serde_derive;
 
@@ -69,27 +71,32 @@ pub enum ResourceType {
     NotificationSettings, // TODO
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
-pub struct ActionErrorObject {
+pub struct CommandError {
     pub error_code : isize,
     pub error : String,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum ActionStatus {
+pub enum CommandStatus {
     Ok(String),
-    Error(ActionErrorObject),
+    Error(CommandError),
 } 
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(default)]
 pub struct CommandResponse {
-    pub sync_status      : HashMap<uuid::Uuid, ActionStatus>,
+    pub sync_status      : HashMap<uuid::Uuid, CommandStatus>,
     pub temp_id_mappings : HashMap<uuid::Uuid, ID>,
 }
 
+#[derive(Default, Debug)]
+pub struct CommandErrors {
+    errors        : HashMap<uuid::Uuid, CommandError>,
+    command_count : usize, 
+}
 
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -115,13 +122,15 @@ pub struct Client {
     last_sync: String,
 }
 
-/// A transactions is a batch of commands that can be sent to Todoist in a signle request
-pub struct Transactions<'a> {
+/// A transactions is a batch of commands that can be sent to Todoist in a single request
+/// 
+/// A transaction can be initiated with Client::begin(), to update the 
+pub struct Transaction<'a> {
     commands: Vec<command::Command>,
     client: &'a mut Client,
 }
 
-impl<'a> Transactions<'a> {
+impl<'a> Transaction<'a> {
     pub fn create<T : command::Create>(mut self, v : T) -> Self {
         self.commands.push(v.create());
         self
@@ -162,8 +171,8 @@ impl<'a> Transactions<'a> {
         self
     }
 
-    pub fn commit(self) {
-        self.client.send(self.commands.as_slice());
+    pub fn commit(self) -> Result<CommandResponse, types::Error> {
+        self.client.send(self.commands.as_slice())
     }
 }
 
@@ -197,21 +206,79 @@ impl<'a> Client {
         Ok(res)
     }
 
-    /// Update a user's resources
+    /// Send a series of commands to todoist
+    /// 
+    /// It is generally prettier and safer to use a transaction, instead of this command.
+    /// See Client::begin()
     pub fn send(&mut self, cmd: &[command::Command]) -> Result<CommandResponse, types::Error> {
+        println!("{}", serde_json::to_string(cmd)?);
         let res : CommandResponse = self.client.post("http://todoist.com/api/v7/sync")
             .form(&[("token", self.token.clone()), 
                     ("commands", serde_json::to_string(cmd)?)])
             .send()?
             .json()?;
-
+        CommandErrors::check_response(&res)?;
         Ok(res)
     }
 
-    pub fn begin(&'a mut self) -> Transactions<'a> {
-        Transactions {
+
+    /// Begin the transaction to send a series of commands to Todoist.
+    pub fn begin(&'a mut self) -> Transaction<'a> {
+        Transaction {
             client: self,
             commands: Vec::new(),
         }
+    }
+}
+
+impl CommandErrors {
+    pub fn check_response(resp : &CommandResponse) -> Result<(), CommandErrors> {
+        let errs = CommandErrors {
+            command_count: resp.sync_status.len(),
+            errors: resp.sync_status.iter()
+                .filter(|(_, y)| 
+                    match y {
+                        CommandStatus::Ok(_) => false,
+                        CommandStatus::Error(_) => true,
+                    })
+                .map(|(x, y)| match y {
+                    CommandStatus::Ok(_) => unreachable!(),
+                    CommandStatus::Error(e) => (x.clone(), (*e).clone()),
+                })
+                .collect(),
+        };
+        if errs.errors.len() > 0 {
+            Err(errs)
+        } else {
+            Ok(())
+        }
+    }
+}
+
+impl fmt::Display for CommandErrors {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}/{} commands failed: \n", self.errors.len(), self.command_count)?;
+        for x in self.errors.iter() {
+            write!(f, " - {}: {}", x.0, x.1)?;
+        }
+        Ok(())
+    }
+}
+
+impl Error for CommandErrors {
+    fn description(&self) -> &'static str {
+        "One or more commands failed"
+    }
+}
+
+impl fmt::Display for CommandError {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "command failed (error {}): {}", self.error_code, self.error)
+    }
+}
+
+impl Error for CommandError {
+    fn description(&self) -> &'static str {
+        "Command failed"
     }
 }
