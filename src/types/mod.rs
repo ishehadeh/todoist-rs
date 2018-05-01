@@ -6,8 +6,10 @@ use std::string::{ToString, String};
 use serde::{Serialize, Deserialize};
 use serde::ser::Serializer;
 use serde::de::{self, Visitor, Deserializer};
+use std;
 use std::mem;
 use std::fmt;
+use std::str;
 
 pub use self::date::{Date, TimeZoneInfo};
 pub use self::intbool::IntBool;
@@ -54,8 +56,12 @@ pub type Priority = u8;
 /// A todoist object ID
 pub type ID = usize;
 
-
 struct ColorVisitor;
+
+#[derive(Clone,Debug)]
+pub struct UnknownColorErr {
+    color : String,
+}
 
 impl<'de> Visitor<'de> for ColorVisitor {
     type Value = Color;
@@ -137,6 +143,18 @@ impl<'de> Visitor<'de> for ColorVisitor {
     }
 }
 
+impl fmt::Display for UnknownColorErr {
+    fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Unknown color name \"{}\"", self.color)
+    }
+}
+
+impl std::error::Error for UnknownColorErr {
+    fn description(&self) -> &'static str {
+        "unknown color name"
+    }
+}
+
 impl ToString for Color {
     fn to_string(&self) -> String {
         String::from(
@@ -166,6 +184,39 @@ impl ToString for Color {
                 Color::Grey          => "#777777",
             }
         )
+    }
+}
+
+impl str::FromStr for Color {
+    type Err = UnknownColorErr;
+
+    fn from_str(s : &str) -> Result<Self, Self::Err> {
+        let generic = s.to_uppercase().replace(" ", "");
+        match generic.as_str() {
+            "LIGHTGREEN"  => Ok(Color::LightGreen),
+            "LIGHTRED"    => Ok(Color::LightRed),
+            "LIGHTORANGE" => Ok(Color::LightOrange),
+            "LIGHTYELLOW" => Ok(Color::LightYellow),
+            "BLUEGREY"    => Ok(Color::BlueGrey),
+            "LIGHTBROWN"  => Ok(Color::LightBrown),
+            "PINK"        => Ok(Color::Pink),
+            "LIGHTGREY"   => Ok(Color::LightGrey),
+            "BROWN"       => Ok(Color::Brown),
+            "YELLOW"      => Ok(Color::Yellow),
+            "TEAL"        => Ok(Color::Teal),
+            "LIGHTBLUE"   => Ok(Color::LightBlue),
+            "PURPLE"      => Ok(Color::Purple),
+            "RED"         => Ok(Color::Red),
+            "ORANGE"      => Ok(Color::Orange),
+            "GREEN"       => Ok(Color::Green),
+            "TURQUOISE"   => Ok(Color::Turquoise),
+            "DARKTURQUOISE" => Ok(Color::DarkTurquoise),
+            "DARKBLUE"      => Ok(Color::DarkBlue),
+            "BLUE"          => Ok(Color::Blue),
+            "BLACK"         => Ok(Color::Black),
+            "GREY"          => Ok(Color::Grey),
+            _ => Err(UnknownColorErr { color: s.to_string() })
+        }
     }
 }
 
