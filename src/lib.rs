@@ -211,7 +211,6 @@ impl<'a> Client {
     /// It is generally prettier and safer to use a transaction, instead of this command.
     /// See Client::begin()
     pub fn send(&mut self, cmd: &[command::Command]) -> Result<CommandResponse, types::Error> {
-        println!("{}", serde_json::to_string(cmd)?);
         let res : CommandResponse = self.client.post("http://todoist.com/api/v7/sync")
             .form(&[("token", self.token.clone()), 
                     ("commands", serde_json::to_string(cmd)?)])
