@@ -6,10 +6,10 @@ extern crate serde_json;
 extern crate erased_serde;
 
 pub mod command;
-pub mod resource;
+pub mod cache;
 
+mod resource;
 mod types;
-#[cfg(test)] mod tests;
 
 pub use types::*;
 pub use resource::*;
