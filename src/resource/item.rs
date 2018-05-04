@@ -81,7 +81,13 @@ pub struct Item {
     pub auto_parse_labels : Option<bool>,
 }
 
-
+impl Item {
+    pub fn new<T : AsRef<str>>(content : T) -> Item {
+        let mut item = Item::default();
+        item.content = Some(content.as_ref().to_string());
+        item
+    }
+}
 
 impl command::Create for Item {
     fn create(self) -> command::Command {
