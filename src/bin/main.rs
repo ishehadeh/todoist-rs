@@ -4,76 +4,18 @@ extern crate xdg;
 extern crate todoist;
 extern crate clap;
 extern crate serde_json;
+extern crate serde;
+
+#[macro_use]
+mod cliutil;
 
 use std::io::{self, BufRead, Write, Read};
 use std::fs::File;
 use std::process::exit;
-use todoist::Cache;
 use std::path::PathBuf;
 
 use clap::{App, Arg, SubCommand};
-
-fn query_api_key() -> String {
-    let stdout = io::stdout();
-    stdout.lock().write_fmt(format_args!(
-        "Please enter your Todoist API key.\n\r>> "
-    )).unwrap();
-    stdout.lock().flush().unwrap();
-    
-    let stdin = io::stdin();
-    let line = stdin.lock()
-        .lines()
-        .next()
-        .expect("there was no next line")
-        .expect("the line could not be read");
-    line
-}
-
-pub fn get_cache_file_path() -> PathBuf {
-    xdg::BaseDirectories::with_prefix("todoist.rs")
-        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) })
-        .place_cache_file("cache.json")
-        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) })
-}
-
-pub fn write_cache(c : &Cache) {
-    let file = File::create(get_cache_file_path())
-        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) });
-    serde_json::to_writer(file, c)
-        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) });
-}
-
-pub fn get_project<'a, P : Into<PathBuf>>(c : &'a Cache, path: P) -> Option<&'a todoist::Project> {
-    let mut sorted : Vec<&todoist::Project> = c.projects.iter()
-                            .map(|(_, x)| x)
-                            .collect();
-    sorted.sort_by(|a, b| a.item_order.cmp(&b.item_order));
-    
-    let mut proj : Option<&todoist::Project> = None;
-
-    for (i, proj_name) in path.into().iter().enumerate() {
-        let order = match(proj) {
-            Some(v) => v.item_order,
-            None => -1,
-        };
-        while sorted.len() != 0 {
-            if sorted[0].name != proj_name.to_string_lossy() || sorted[0].indent != i as u8 + 1 || sorted[0].item_order < order {
-                sorted.remove(0);
-            } else {
-                break;
-            }
-        }
-
-        if sorted.len() == 0 {
-            println!("hi");
-            return None;
-        }
-
-        proj = Some(sorted[0]);
-    }
-
-    proj
-}
+use todoist::Cache;
 
 fn main() {
     let matches = App::new("todoist")
@@ -138,29 +80,25 @@ fn main() {
                                     .help("make this item a favorite"))))
                         .get_matches();
 
-    let mut cache = match File::open(get_cache_file_path()) {
-        Ok(v) => serde_json::from_reader(v).unwrap(),
-        Err(_) => Cache::new(),
-    };
+    let mut cache : todoist::Cache = cliutil::read_cache("todoist.rs").unwrap();
 
     let mut client = match cache.create_client() {
         Err(_) => {
-            cache.token = Some(query_api_key());
+            cache.token = Some(query!("Please enter your API key: ").unwrap());
             cache.create_client().unwrap()
         },
         Ok(v) => v,
     };
 
-    cache.sync(&client).unwrap_or_else(|e| panic!("{}", e));
-    if matches.subcommand_matches("sync").is_some() {
-        cache.sync(&client).unwrap_or_else(|e| panic!("{}", e));
-        write_cache(&cache);
-    } else if let Some(matches) = matches.subcommand_matches("create") {
+    cache.sync(&client).unwrap();
+    cliutil::cache("todoist.rs", &cache).unwrap();
+
+    if let Some(matches) = matches.subcommand_matches("create") {
         let mut tx = client.begin();
         if let Some(matches) = matches.subcommand_matches("project") {
             let mut name_path = PathBuf::from(matches.value_of("name").unwrap());
             let name = name_path.file_name().unwrap().to_string_lossy();
-            let parent = get_project(&cache, name_path.parent().unwrap()).unwrap();
+            let parent = cache.get_project(name_path.parent().unwrap()).unwrap();
 
             let mut new_proj     = todoist::Project::new(&name);
             new_proj.indent      = parent.indent + 1;
@@ -171,7 +109,7 @@ fn main() {
             tx.create(new_proj);
         } else if let Some(matches) = matches.subcommand_matches("item") {
             let parent_name = matches.value_of("project").unwrap();
-            let parent = get_project(&cache, parent_name).unwrap();
+            let parent = cache.get_project(parent_name).unwrap();
 
             let mut item     = todoist::Item::new(matches.value_of("content").unwrap());
             item.project_id  = parent.id;
@@ -185,5 +123,4 @@ fn main() {
         }
         tx.commit();
     }
-    write_cache(&cache);
 }
