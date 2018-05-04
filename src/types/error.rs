@@ -12,6 +12,7 @@ pub enum Error {
     Request(reqwest::Error),
     Serialize(serde_json::Error),
     ApiError(CommandErrors),
+    InvalidApiToken(String),
 }
 
 
@@ -40,6 +41,7 @@ impl fmt::Display for Error {
             &Error::Request(ref e) => write!(f, "{}", e),
             &Error::Serialize(ref e) => write!(f, "{}", e),
             &Error::ApiError(ref e) => write!(f, "{}", e),
+            &Error::InvalidApiToken(ref e) => write!(f, "invalid API token \"{}\"", e),
         }
     }
 }
@@ -50,7 +52,7 @@ impl error::Error for Error {
             &Error::Request(_) => "request failed",
             &Error::Serialize(_) => "serialization failed",
             &Error::ApiError(_) => "api error",
-
+            &Error::InvalidApiToken(_) => "invalid API token",
         }
     }
 }

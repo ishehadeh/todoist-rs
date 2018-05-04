@@ -13,6 +13,7 @@ mod types;
 
 pub use types::*;
 pub use resource::*;
+pub use cache::*;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -119,7 +120,6 @@ pub struct SyncResponse {
 pub struct Client {
     token: String,
     client: reqwest::Client,
-    last_sync: String,
 }
 
 /// A transactions is a batch of commands that can be sent to Todoist in a single request
@@ -180,29 +180,20 @@ impl<'a> Client {
 
     /// Create a new client with a Todoist API key
     pub fn new(tok: &str) -> Client {
-        Client::new_with_sync(tok, "*")
-    }
-    
-    /// create a new client with a sync token and API key
-    pub fn new_with_sync(tok: &str, sync_tok: &str) -> Client {
         Client {
             client: reqwest::Client::new(),
             token: String::from(tok),
-            last_sync: String::from(sync_tok),
-
         }
     }
 
     /// Request resources from todoist
-    pub fn sync(&mut self, what: &[ResourceType]) -> Result<SyncResponse, types::Error> {
+    pub fn sync(&self, sync_token: &str, what: &[ResourceType]) -> Result<SyncResponse, types::Error> {
         let res : SyncResponse = self.client.post("http://todoist.com/api/v7/sync")
-            .form(&[("token", self.token.clone()), 
-                    ("sync_token", self.last_sync.clone()),
-                    ("resource_types", serde_json::to_string(what)?)])
+            .form(&[("token",       self.token.as_str()), 
+                    ("sync_token",  sync_token),
+                    ("resource_types", &serde_json::to_string(what)?)])
             .send()?
             .json()?;
-
-        self.last_sync = res.sync_token.clone();
         Ok(res)
     }
 

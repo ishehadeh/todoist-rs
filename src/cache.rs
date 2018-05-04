@@ -1,12 +1,15 @@
-use super::{Client, Collaborator, Project, Item, Label, User, ID, ResourceType};
+use super::{Client, Collaborator, Project, Item, Label, User, ID, ResourceType, Transaction};
 use super::types::Error;
 
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Cache {
+    /// The user's api token
+    pub token : Option<String>,
+
     /// The token returned on the last sync request
-    sync_token : String,
+    pub sync_token : Option<String>,
 
     pub user : User,
     pub labels : HashMap<ID, Label>,
@@ -16,12 +19,34 @@ pub struct Cache {
 }
 
 impl Cache {
-    pub fn sync(&mut self, client : &mut Client) -> Result<(), Error> {
-        let resp = client.sync(&[ResourceType::Projects,
-                                 ResourceType::Items,
-                                 ResourceType::User,
-                                 ResourceType::Collaborators,
-                                 ResourceType::Labels])?;
+    pub fn new() -> Cache {
+        Cache {
+            token: None,
+            sync_token: None,
+            user: User::default(),
+            labels: HashMap::new(),
+            projects: HashMap::new(),
+            items: HashMap::new(),
+            collaborators: HashMap::new(),
+        }
+    }
+
+    pub fn create_client(&self) -> Result<Client, Error> {
+        match self.token {
+            Some(ref v) => Ok(Client::new(v)),
+            None => Err(Error::InvalidApiToken("<None>".to_string()))
+        }
+    }
+
+    pub fn sync(&mut self, client: &Client) -> Result<(), Error> {
+        let sync_tok = self.sync_token.clone().unwrap_or("*".to_string());
+        let resp = client.sync(&sync_tok,
+                                  &[ResourceType::Projects,
+                                    ResourceType::Items,
+                                    ResourceType::User,
+                                    ResourceType::Collaborators,
+                                    ResourceType::Labels])?;
+
         match resp.user {
             Some(v) => self.user = v,
             None => (),
@@ -41,7 +66,7 @@ impl Cache {
         for label in resp.labels.unwrap() {
             self.labels.insert(label.id, label);
         }
-        self.sync_token = resp.sync_token.clone();
+        self.sync_token = Some(resp.sync_token.clone());
         Ok(())
     }
 }

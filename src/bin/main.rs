@@ -1,15 +1,19 @@
+#[macro_use]
+extern crate serde_derive;
+extern crate xdg;
 extern crate todoist;
 extern crate clap;
-extern crate preferences;
+extern crate serde_json;
 
-use std::io::{self, BufRead, Write};
+use std::io::{self, BufRead, Write, Read};
+use std::fs::File;
+use std::process::exit;
+use todoist::Cache;
+use std::path::PathBuf;
 
-use preferences::{AppInfo, Preferences, PreferencesError};
 use clap::{App, Arg, SubCommand};
 
-const APP_INFO: AppInfo = AppInfo{name: "todoist", author: "Ian Shehadeh <IanShehadeh2020@gmail.com>"};
-
-fn query_api_key() -> Result<String, PreferencesError> {
+fn query_api_key() -> String {
     let stdout = io::stdout();
     stdout.lock().write_fmt(format_args!(
         "Please enter your Todoist API key.\n\r>> "
@@ -22,45 +26,51 @@ fn query_api_key() -> Result<String, PreferencesError> {
         .next()
         .expect("there was no next line")
         .expect("the line could not be read");
-    line.save(&APP_INFO, "todoist/user/api_key")?;
-    String::load(&APP_INFO, "todoist/user/api_key")
+    line
+}
+
+pub fn get_cache_file_path() -> PathBuf {
+    xdg::BaseDirectories::with_prefix("todoist.rs")
+        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) })
+        .place_cache_file("cache.json")
+        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) })
+}
+
+pub fn write_cache(c : &Cache) {
+    let file = File::create(get_cache_file_path())
+        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) });
+    serde_json::to_writer(file, c)
+        .unwrap_or_else(|e| { println!("ERROR: {}", e); exit(1) });
 }
 
 fn main() {
-    let matches = App::new(APP_INFO.name)
-                        .author(APP_INFO.author)
+    let matches = App::new("todoist")
+                        .author("Ian Shehadeh")
                         .version("0.1.0")
                         .about("Simple CLI for todoist")
+                        .subcommand(SubCommand::with_name("sync")
+                            .about("sync the local cache with the server"))
                         .subcommand(SubCommand::with_name("create")
                             .about("Create a new todoist resource")
                             .subcommand(SubCommand::with_name("project")
                                 .arg(Arg::with_name("name")
-                                    .short("n")
-                                    .long("name")
                                     .help("set the project's name")
                                     .value_name("NAME")
                                     .required(true)
                                     .takes_value(true))
-                                .arg(Arg::with_name("indent")
-                                    .short("i")
-                                    .long("indent")
-                                    .help("set the project's indent (1-4)")
-                                    .value_name("NUMBER")
-                                    .default_value("1")
-                                    .takes_value(true))
-                                .arg(Arg::with_name("order")
-                                    .short("o")
-                                    .long("order")
-                                    .help("the project's order in the tree. 0 is the first project.")
-                                    .value_name("NUMBER")
-                                    .default_value("0")
+                                .arg(Arg::with_name("parent")
+                                    .short("p")
+                                    .long("parent")
+                                    .help("set the project's parent")
+                                    .value_name("STRING")
+                                    .default_value("Inbox")
                                     .takes_value(true))
                                 .arg(Arg::with_name("color")
                                     .short("c")
                                     .long("color")
                                     .help("the project's color.")
                                     .value_name("COLOR")
-                                    .default_value("LIGHTGREY")
+                                    .default_value("Light Grey")
                                     .takes_value(true))
                                 .arg(Arg::with_name("favorite")
                                     .short("f")
@@ -68,22 +78,45 @@ fn main() {
                                     .help("make this project a favorite"))))
                         .get_matches();
 
-    let api_key = match String::load(&APP_INFO, "todoist/user/api_key") {
-        Ok(v) => v,
-        Err(_) => query_api_key().unwrap(),
+    let mut cache = match File::open(get_cache_file_path()) {
+        Ok(v) => serde_json::from_reader(v).unwrap(),
+        Err(_) => Cache::new(),
     };
 
-    let mut client = todoist::Client::new(&api_key);
-    let mut tx = client.begin();
-    if let Some(matches) = matches.subcommand_matches("create") {
+    let mut client = match cache.create_client() {
+        Err(_) => {
+            cache.token = Some(query_api_key());
+            cache.create_client().unwrap()
+        },
+        Ok(v) => v,
+    };
+
+    if matches.subcommand_matches("sync").is_some() {
+        cache.sync(&client).unwrap_or_else(|e| panic!("{}", e));
+        write_cache(&cache);
+    } else if let Some(matches) = matches.subcommand_matches("create") {
         if let Some(matches) = matches.subcommand_matches("project") {
+            let parent_name = matches.value_of("parent").unwrap();
+            let parents : Vec<todoist::Project> = cache.projects.iter().filter(|(_, v)| v.name == parent_name).map(|(_, v)| (*v).clone()).collect();
+            if parents.len() > 1 {
+                panic!("multiple projects!");
+            }
+            if parents.len() == 0 {
+                panic!("no projects!");
+            }
+            let parent = parents.iter().nth(0).unwrap();
+
             let mut new_proj     = todoist::Project::new(matches.value_of("name").unwrap());
-            new_proj.indent      = matches.value_of("indent").unwrap().parse().unwrap();
-            new_proj.item_order  = matches.value_of("order").unwrap().parse().unwrap();
+            new_proj.indent      = parent.indent + 1;
+            new_proj.item_order  = parent.item_order + 1;
             new_proj.color       = matches.value_of("color").unwrap().parse().unwrap();
             new_proj.is_favorite = todoist::IntBool::from(matches.is_present("favorite"));
+            
+            let mut tx = client.begin();
             tx.create(new_proj);
+            tx.commit();
         }
+        cache.sync(&client).unwrap_or_else(|e| panic!("{}", e));
+        write_cache(&cache);
     }
-    tx.commit().unwrap();
 }
