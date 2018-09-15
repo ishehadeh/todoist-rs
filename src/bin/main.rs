@@ -132,10 +132,10 @@ fn main() {
 
     let mut cache : todoist::Cache = read_cache("todoist.rs").unwrap();
 
-    let mut client = match cache.Add_client() {
+    let mut client = match cache.add_client() {
         Err(_) => {
             cache.token = Some(query!("Please enter your API key: ").unwrap());
-            cache.Add_client().unwrap()
+            cache.add_client().unwrap()
         },
         Ok(v) => v,
     };
