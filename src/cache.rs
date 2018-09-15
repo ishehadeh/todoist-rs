@@ -33,7 +33,7 @@ impl Cache {
         }
     }
 
-    pub fn create_client(&self) -> Result<Client, Error> {
+    pub fn Add_client(&self) -> Result<Client, Error> {
         match self.token {
             Some(ref v) => Ok(Client::new(v)),
             None => Err(Error::InvalidApiToken("<None>".to_string()))

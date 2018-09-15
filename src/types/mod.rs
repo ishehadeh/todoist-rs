@@ -1,10 +1,8 @@
 mod date;
-mod intbool;
 mod error;
 mod color;
 
 pub use self::date::{Date, TimeZoneInfo};
-pub use self::intbool::IntBool;
 pub use self::error::Error;
 pub use self::color::Color;
 

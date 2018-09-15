@@ -2,7 +2,7 @@ use types::*;
 use command;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
 
 /// A Todoist task item
@@ -54,179 +54,53 @@ pub struct Item {
     pub responsible_uid : Option<ID>,
 
     /// 1 if this task has been completed
-    pub checked : IntBool,
+    pub checked : isize,
 
     // 1 if this item has been marked as as completely completed (all child tasks have also been completed)
-    pub in_history : IntBool,
+    pub in_history : isize,
 
     // 1 if this item has been marked as deleted
-    pub is_deleted : IntBool,
+    pub is_deleted : isize,
 
     // 1 if this item has been marked as archived
-    pub is_archived : IntBool,
+    pub is_archived : isize,
 
     // 1 if this item has been marked as a favorite
-    pub is_favorite : IntBool,
+    pub is_favorite : isize,
 
     /// used internally by Todoist, here for completeness 
     pub sync_id : Option<isize>,
 
     /// when this item was added
     pub date_added : Option<Date>,
-
-    /// if true this item will use the user's default reminder (this field is CREATE only)
-    pub auto_reminders : Option<bool>,
-
-    /// if true this item's labels will be parsed from the content field (this field is CREATE only)
-    pub auto_parse_labels : Option<bool>,
 }
 
 impl Item {
-    pub fn new<T : AsRef<str>>(content : T) -> Item {
-        let mut item = Item::default();
-        item.content = Some(content.as_ref().to_string());
-        item
+    pub fn add() -> command::item::Add {
+        command::item::Add::default()
     }
-}
 
-impl command::Create for Item {
-    fn create(self) -> command::Command {
-        command::Command {
-            typ: "item_add".to_string(),
-            args: Box::new(
-                command::item::Create {
-                    content : self.content,
-                    project_id : self.project_id,
-                    date_string : self.date_string,
-                    date_lang : self.date_lang,
-                    due_date_utc : self.due_date_utc,
-                    priority : self.priority,
-                    indent : self.indent,
-                    item_order : self.item_order,
-                    day_order : self.day_order,
-                    collapsed : self.collapsed,
-                    labels : self.labels,
-                    assigned_by_uid : self.assigned_by_uid,
-                    auto_parse_labels : self.auto_parse_labels,
-                    auto_reminders : self.auto_reminders,
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: Some(Uuid::new_v4()),
-        }
-    }
-}
-
-impl command::Update for Item {
-    fn update(self) -> command::Command {
-        command::Command {
-            typ: "item_update".to_string(),
-            args: Box::new(
-                command::item::Update {
-                    id : self.id,
-                    content : self.content,
-                    date_string : self.date_string,
-                    date_lang : self.date_lang,
-                    due_date_utc : self.due_date_utc,
-                    priority : self.priority,
-                    indent : self.indent,
-                    item_order : self.item_order,
-                    day_order : self.day_order,
-                    collapsed : self.collapsed,
-                    labels : self.labels,
-                    assigned_by_uid : self.assigned_by_uid,
-                    responsible_uid : self.responsible_uid,
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Delete for Item {
-    fn delete(self) -> command::Command {
-        command::Command {
-            typ: "item_delete".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-
-impl command::Archive for Item {
-    fn archive(self) -> command::Command {
-        command::Command {
-            typ: "item_archive".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
+    pub fn update(&self) -> command::item::Update {
+        command::item::Update {
+            id: self.id,
+            item_order: self.item_order,
+            content: self.content.clone(),
+            assigned_by_uid: self.assigned_by_uid,
+            collapsed: self.collapsed,
+            date_string: self.date_string.clone(),
+            date_lang: self.date_lang.clone(),
+            day_order: self.day_order,
+            due_date_utc: self.due_date_utc.clone(),
+            indent: self.indent,
+            labels: self.labels.clone(),
+            priority: self.priority,
+            responsible_uid: self.responsible_uid,
         }
     }
 
-    fn unarchive(self) -> command::Command {
-        command::Command {
-            typ: "item_unarchive".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Close for Item {
-    fn close(self) -> command::Command {
-        command::Command {
-            typ: "item_close".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Complete for Item {
-    fn complete(self) -> command::Command {
-        command::Command {
-            typ: "item_complete".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-
-    fn uncomplete(self) -> command::Command {
-        command::Command {
-            typ: "item_uncomplete".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
+    pub fn delete(&self) -> command::item::Delete {
+        command::item::Delete {
+            ids: vec![self.id]
         }
     }
 }

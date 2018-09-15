@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate serde_derive;
 extern crate xdg;
 extern crate todoist;
@@ -6,16 +5,67 @@ extern crate clap;
 extern crate serde_json;
 extern crate serde;
 
-#[macro_use]
-mod cliutil;
 
-use std::io::{self, BufRead, Write, Read};
-use std::fs::File;
-use std::process::exit;
-use std::path::PathBuf;
+use std::io::{self, BufRead, Write};
+use std::path::{ Path};
+use std::ffi::OsStr;
+use std::fs;
+use std::fmt;
 
 use clap::{App, Arg, SubCommand};
-use todoist::Cache;
+/// Ask the user a question.
+///
+/// generally you should use the `query!` macro over this function.
+pub fn query(format: fmt::Arguments) -> Result<String, io::Error> {
+    let stdin  = io::stdin();
+    let stdout = io::stdout();
+    
+    stdout.lock().write_fmt(format)?;
+    stdout.lock().flush()?;
+    
+    let line = stdin.lock()
+        .lines()
+        .next()
+        .unwrap_or(Ok(String::from("")));
+    line
+}
+
+/// Write a structure to a file in the user's cache directory
+pub fn write_cache<S: serde::Serialize>(prefix: &str, c : &S) -> Result<(), serde_json::Error> {
+    let path = xdg::BaseDirectories::with_prefix(prefix).unwrap().place_cache_file("cache.json").unwrap();
+    let file = fs::File::create(path).unwrap();
+    serde_json::to_writer(file, c)?;
+    Ok(())
+}
+
+/// Read a deserializable structure from the user's cache directory
+pub fn read_cache<D>(prefix: &str) -> serde_json::Result<D>
+    where D: serde::de::DeserializeOwned + Default + serde::Serialize
+ {
+    let path = xdg::BaseDirectories::with_prefix(prefix).unwrap().place_cache_file("cache.json").unwrap();
+    let file = match fs::File::open(&path) {
+        Ok(v) => v,
+        Err(_) => {
+            write_cache(prefix, &D::default())?;
+            fs::File::open(path).unwrap()
+        }
+    };
+    serde_json::from_reader(file)
+}
+
+pub fn split_path<'a, P : AsRef<Path>>(p : &'a P) -> (String, Option<&'a Path>) {
+    let name = p.as_ref().file_name().unwrap_or(&OsStr::new("")).to_string_lossy();
+    let path = p.as_ref().parent();
+    (name.to_string(), path)
+}
+
+/// Print formatted text to `stdout`, the read the first line the user inputs.
+macro_rules! query {
+    () => ($crate::query(format_args!(">> ")));
+    ($fmt:expr) => ($crate::query(format_args!($fmt)));
+    ($fmt:expr, $($arg:tt)*) => ($crate::query(format_args!($fmt, $($arg)*)));
+}
+
 
 fn main() {
     let matches = App::new("todoist")
@@ -24,8 +74,8 @@ fn main() {
                         .about("Simple CLI for todoist")
                         .subcommand(SubCommand::with_name("sync")
                             .about("sync the local cache with the server"))
-                        .subcommand(SubCommand::with_name("create")
-                            .about("Create a new todoist resource")
+                        .subcommand(SubCommand::with_name("add")
+                            .about("Add a new todoist resource")
                             .subcommand(SubCommand::with_name("project")
                                 .arg(Arg::with_name("name")
                                     .help("set the project's name")
@@ -80,47 +130,40 @@ fn main() {
                                     .help("make this item a favorite"))))
                         .get_matches();
 
-    let mut cache : todoist::Cache = cliutil::read_cache("todoist.rs").unwrap();
+    let mut cache : todoist::Cache = read_cache("todoist.rs").unwrap();
 
-    let mut client = match cache.create_client() {
+    let mut client = match cache.Add_client() {
         Err(_) => {
             cache.token = Some(query!("Please enter your API key: ").unwrap());
-            cache.create_client().unwrap()
+            cache.Add_client().unwrap()
         },
         Ok(v) => v,
     };
 
     cache.sync(&client).unwrap();
-    cliutil::cache("todoist.rs", &cache).unwrap();
+    write_cache("todoist.rs", &cache).unwrap();
 
-    if let Some(matches) = matches.subcommand_matches("create") {
+    if let Some(matches) = matches.subcommand_matches("add") {
         let mut tx = client.begin();
         if let Some(matches) = matches.subcommand_matches("project") {
-            let mut name_path = PathBuf::from(matches.value_of("name").unwrap());
-            let name = name_path.file_name().unwrap().to_string_lossy();
-            let parent = cache.get_project(name_path.parent().unwrap()).unwrap();
+            let pathstr = matches.value_of("name").unwrap().to_string();
+            let (name, path) = split_path(&pathstr);
+            let parent = cache.get_project(path.unwrap()).unwrap();
 
-            let mut new_proj     = todoist::Project::new(&name);
-            new_proj.indent      = parent.indent + 1;
-            new_proj.item_order  = parent.item_order;
-            new_proj.color       = matches.value_of("color").unwrap().parse().unwrap();
-            new_proj.is_favorite = todoist::IntBool::from(matches.is_present("favorite"));
-            
-            tx.create(new_proj);
+            tx.exec(todoist::Project::add()
+                    .name(name)
+                    .indent(parent.indent + 1)
+                    .item_order(parent.item_order)
+                    .is_favorite(matches.is_present("favorite") as isize)
+                    .color(matches.value_of("color").unwrap().parse().unwrap()));
         } else if let Some(matches) = matches.subcommand_matches("item") {
-            let parent_name = matches.value_of("project").unwrap();
-            let parent = cache.get_project(parent_name).unwrap();
+            let parent = cache.get_project(matches.value_of("project").unwrap()).unwrap();
 
-            let mut item     = todoist::Item::new(matches.value_of("content").unwrap());
-            item.project_id  = parent.id;
-            item.date_string = match matches.value_of("due") {
-                Some(v) => Some(v.to_string()),
-                None => None,
-            };
-            item.is_favorite = todoist::IntBool::from(matches.is_present("favorite"));
-            
-            tx.create(item);
+            tx.exec(todoist::Item::add()
+                    .content(matches.value_of("content").unwrap().to_string())
+                    .project_id(parent.id)
+                    .priority(matches.value_of("priority").unwrap().parse().unwrap()));
         }
-        tx.commit();
+        tx.commit().unwrap();
     }
 }

@@ -2,7 +2,7 @@ use types::*;
 use command;
 use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
 
 /// A Todoist label (premium users only)
@@ -20,60 +20,30 @@ pub struct Label {
     pub item_order : isize,
 
     // 1 if this label has been marked as deleted
-    pub is_deleted : IntBool,
+    pub is_deleted : isize,
     // 1 if this label has been marked as a favorite
-    pub is_favorite : IntBool,
+    pub is_favorite : isize,
 }
 
 
-impl command::Create for Label {
-    fn create(self) -> command::Command {
-        command::Command {
-            typ: "label_add".to_string(),
-            args: Box::new(
-                command::label::Create {
-                    name:        self.name,
-                    color:       self.color,
-                    item_order:  self.item_order,
-                    is_favorite: self.is_favorite,
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: Some(Uuid::new_v4()),
+impl Label {
+    pub fn add() -> command::label::Add {
+        command::label::Add::default()
+    }
+
+    pub fn update(&self) -> command::label::Update {
+        command::label::Update {
+            id: self.id,
+            item_order: self.item_order,
+            is_favorite: self.is_favorite,
+            name: self.name.clone(),
+            color: self.color.clone(),
         }
     }
-}
 
-impl command::Update for Label {
-    fn update(self) -> command::Command {
-        command::Command {
-            typ: "label_update".to_string(),
-            args: Box::new(
-                command::label::Update {
-                    name:        self.name,
-                    id:          self.id,
-                    color:       self.color,
-                    item_order:  self.item_order,
-                    is_favorite: self.is_favorite,
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Delete for Label {
-    fn delete(self) -> command::Command {
-        command::Command {
-            typ: "label_delete".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
+    pub fn delete(&self) -> command::label::Delete {
+        command::label::Delete {
+            ids: vec![self.id]
         }
     }
 }

@@ -1,7 +1,7 @@
 use types::*;
 use super::User;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// How a user will be notified about a reminder
 pub enum NotificationService {
@@ -18,7 +18,7 @@ pub enum NotificationService {
     None,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// How a user will be notified about a reminder
 pub enum NotificationTrigger {
@@ -29,7 +29,7 @@ pub enum NotificationTrigger {
     OnLeave,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// The way a notification is triggered: time (relative or absolute) or location
 pub enum NotificationType {
@@ -45,7 +45,7 @@ pub enum NotificationType {
     Location,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
 
 /// A Todoist reminder
@@ -94,7 +94,7 @@ pub struct Reminder {
     pub radius : Option<isize>,
 
     // if this reminder has been marked as deleted
-    pub is_deleted : IntBool,
+    pub is_deleted : isize,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -103,10 +103,10 @@ pub struct LiveNotification {
     /// this notification's ID
     pub id : ID,
 
-    /// when this live notification was created (in unix time)
-    pub created : i64,
+    /// when this live notification was added (in unix time)
+    pub add : i64,
 
-    /// the user who created this notification
+    /// the user who Add this notification
     pub from_uid : ID,
 
     /// unique key for this notification
@@ -116,7 +116,7 @@ pub struct LiveNotification {
     pub seq_no : isize,
 
     /// whether this notification has been read
-    pub is_unread : IntBool,
+    pub is_unread : isize,
 
     // -----------------------------------
     // INVITATION PROPERTIES
@@ -194,7 +194,7 @@ pub struct LiveNotification {
     pub account_name      : Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum LiveNotificationType {
     #[serde(rename = "share_invitation_sent")]
     ShareInvitationSent,
@@ -235,8 +235,8 @@ pub enum LiveNotificationType {
     #[serde(rename = "biz_account_disabled")]
     BusinessAccountDisabled,
 
-    #[serde(rename = "biz_invitation_created")]
-    BusinessInvitationCreated,
+    #[serde(rename = "biz_invitation_added")]
+    BusinessInvitationAdedd,
 
     #[serde(rename = "biz_invitation_accepted")]
     BusinessInvitationAccepted,

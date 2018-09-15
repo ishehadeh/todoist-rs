@@ -8,7 +8,7 @@ use uuid::Uuid;
 use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::ser::SerializeSeq;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum UploadState {
     #[serde(rename = "pending")]
     Pending,
@@ -18,7 +18,7 @@ pub enum UploadState {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Thumbnail {
     link : String,
     width : usize,
@@ -26,7 +26,7 @@ pub struct Thumbnail {
 }
 
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
 
 /// A Todoist note
@@ -37,7 +37,7 @@ pub struct Note {
     /// The ID of the note's poster
     pub user_id : ID,
 
-    /// The ID of the item the note is attached to
+    /// The ID of the note the note is attached to
     pub item_id : ID,
 
     /// The ID of the project this note is a part of
@@ -53,16 +53,16 @@ pub struct Note {
     pub uids_to_notify : Vec<ID>,
 
     /// whether this note is marked as deleted
-    pub is_deleted : IntBool,
+    pub is_deleted : isize,
 
     /// whether this note has been marked as archived
-    pub is_archived : IntBool,
+    pub is_archived : isize,
 
     /// the date that this note was posted
     pub posting : Date,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
 
 /// A file attachment
@@ -146,72 +146,22 @@ impl Serialize for Thumbnail {
     }
 }
 
-impl command::Create for ProjectNote {
-    fn create(self) -> command::Command {
-        command::Command {
-            typ: "note_add".to_string(),
-            args: Box::new(
-                command::note::Create {
-                    project_id      : Some(self.0.project_id),
-                    item_id         : None,
-                    content         : self.0.content,
-                    file_attachment : Some(self.0.file_attachment),
-                    uids_to_notify  : None,
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
+impl Note {
+    pub fn add() -> command::note::Add {
+        command::note::Add::default()
+    }
+
+    pub fn update(&self) -> command::note::Update {
+        command::note::Update {
+            id: self.id,
+            content: self.content.clone(),
+            file_attachment: Some(self.file_attachment.clone()),
         }
     }
-}
 
-impl command::Create for Note {
-    fn create(self) -> command::Command {
-        command::Command {
-            typ: "note_add".to_string(),
-            args: Box::new(
-                command::note::Create {
-                    item_id         : Some(self.project_id),
-                    project_id      : None,
-                    content         : self.content,
-                    file_attachment : Some(self.file_attachment),
-                    uids_to_notify  : Some(self.uids_to_notify),
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Update for Note {
-    fn update(self) -> command::Command {
-        command::Command {
-            typ: "note_update".to_string(),
-            args: Box::new(
-                command::note::Update {
-                    content         : self.content,
-                    id              : self.id,
-                    file_attachment : Some(self.file_attachment),
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
-        }
-    }
-}
-
-impl command::Delete for Note {
-    fn delete(self) -> command::Command {
-        command::Command {
-            typ: "note_delete".to_string(),
-            args: Box::new(
-                command::Identity {
-                    ids: vec![self.id],
-                }
-            ),
-            uuid:    Uuid::new_v4(),
-            temp_id: None,
+    pub fn delete(&self) -> command::note::Delete {
+        command::note::Delete {
+            ids: vec![self.id]
         }
     }
 }

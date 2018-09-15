@@ -3,7 +3,7 @@ extern crate reqwest;
 extern crate uuid;
 extern crate chrono;
 extern crate serde_json;
-extern crate erased_serde;
+
 
 pub mod command;
 pub mod cache;
@@ -131,43 +131,12 @@ pub struct Transaction<'a> {
 }
 
 impl<'a> Transaction<'a> {
-    pub fn create<T : command::Create>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.create());
-        self
-    }
-
-    pub fn delete<T : command::Delete>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.delete());
-        self
-    }
-
-    pub fn archive<T : command::Archive>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.archive());
-        self
-    }
-
-    pub fn unarchive<T : command::Archive>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.unarchive());
-        self
-    }
-
-    pub fn update<T : command::Update>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.update());
-        self
-    }
-
-    pub fn close<T : command::Close>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.close());
-        self
-    }
-
-    pub fn complete<T : command::Complete>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.complete());
-        self
-    }
-
-    pub fn uncomplete<T : command::Complete>(&mut self, v : T) -> &mut Self {
-        self.commands.push(v.uncomplete());
+    pub fn exec<T : Into<command::CommandArgs>>(&mut self, args : T) -> &mut Self {
+        self.commands.push(command::Command {
+                args: args.into(),
+                temp_id: Some(uuid::Uuid::new_v4()),
+                uuid: uuid::Uuid::new_v4(),
+            });
         self
     }
 
@@ -178,7 +147,7 @@ impl<'a> Transaction<'a> {
 
 impl<'a> Client {
 
-    /// Create a new client with a Todoist API key
+    /// Add a new client with a Todoist API key
     pub fn new(tok: &str) -> Client {
         Client {
             client: reqwest::Client::new(),
@@ -202,6 +171,7 @@ impl<'a> Client {
     /// It is generally prettier and safer to use a transaction, instead of this command.
     /// See Client::begin()
     pub fn send(&mut self, cmd: &[command::Command]) -> Result<CommandResponse, types::Error> {
+        println!("{}", serde_json::to_string(cmd)?);
         let res : CommandResponse = self.client.post("http://todoist.com/api/v7/sync")
             .form(&[("token", self.token.clone()), 
                     ("commands", serde_json::to_string(cmd)?)])
