@@ -10,39 +10,39 @@ use command;
 /// A Todoist Project
 pub struct Project {
     /// The project's unique ID
-    pub id    : ID,
+    pub id: ID,
 
     /// The project's name
-    pub name  : String,
+    pub name: String,
 
     /// The project's Color
-    pub color : Color,
+    pub color: Color,
 
     /// The project's indent (hierarchy level) is a number between from 1-4
-    pub indent : u8,
+    pub indent: u8,
 
     /// This project's position in the project list, the smallest number should be at the top
-    pub item_order : isize,
+    pub item_order: isize,
 
     /// Whether this project's child's project's children are visible
-    pub collapsed : isize,
+    pub collapsed: isize,
 
-    pub shared : bool,
+    pub shared: bool,
 
     // 1 if this project has been marked as deleted
-    pub is_deleted : isize,
+    pub is_deleted: isize,
 
     // 1 if this project has been marked as archived
-    pub is_archived :isize,
+    pub is_archived: isize,
 
     // 1 if this project has been marked as a favorite
-    pub is_favorite : isize,
+    pub is_favorite: isize,
 
     /// True if this project is in the user's inbox
-    pub inbox : bool,
+    pub inbox: bool,
 
     /// True if this project is in the team's inbox
-    pub inbox_team : bool,
+    pub inbox_team: bool,
 }
 
 impl Project {
@@ -63,8 +63,6 @@ impl Project {
     }
 
     pub fn delete(&self) -> command::project::Delete {
-        command::project::Delete {
-            ids: vec![self.id]
-        }
+        command::project::Delete { ids: vec![self.id] }
     }
 }

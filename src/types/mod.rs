@@ -1,10 +1,10 @@
+mod color;
 mod date;
 mod error;
-mod color;
 
+pub use self::color::Color;
 pub use self::date::{Date, TimeZoneInfo};
 pub use self::error::Error;
-pub use self::color::Color;
 
 /// A 2 character language ID
 /// valid ids: `en`, `da`, `pl`, `zh`, `ko`, `de`, `pt`, `ja`, `it`, `fr`, `sv`, `ru`, `es`, `nl`

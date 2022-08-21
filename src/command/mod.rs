@@ -1,10 +1,11 @@
-use uuid::Uuid;
 use types::ID;
-#[macro_use] mod macros;
+use uuid::Uuid;
+#[macro_use]
+mod macros;
 
 pub mod filter {
     use types::{Color, ID};
-    
+
     command! {
         pub struct Add {
             name  : String,
@@ -30,8 +31,8 @@ pub mod filter {
 }
 
 pub mod item {
-    use types::*;
     use std::collections::HashMap;
+    use types::*;
 
     command! {
         pub struct Add {
@@ -70,7 +71,6 @@ pub mod item {
         }
     }
 
-
     command! {
         pub struct Move {
              project_items : HashMap<ID, ID>,
@@ -107,12 +107,11 @@ pub mod label {
     }
 
     identity_list_command!(Delete);
-
 }
 
 pub mod note {
-    use types::*;
     use resource::Attachment;
+    use types::*;
 
     command! {
         pub struct Add {
@@ -131,7 +130,6 @@ pub mod note {
             file_attachment : Option<Attachment>
         }
     }
-
 
     identity_list_command!(Delete);
 }
@@ -194,7 +192,7 @@ make_argument_enum! {
 #[derive(Serialize)]
 pub struct Command {
     #[serde(flatten)]
-    pub args    : CommandArgs,
-    pub uuid    : Uuid,
-    pub temp_id : Option<Uuid>, 
+    pub args: CommandArgs,
+    pub uuid: Uuid,
+    pub temp_id: Option<Uuid>,
 }

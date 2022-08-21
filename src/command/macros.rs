@@ -1,4 +1,3 @@
-
 macro_rules! command_arguments {
     (Vec<ID>, $field:ident, $($typs:tt $(<$($generics:tt $(<$generics2:tt>)*),+>)*, $fields:ident),*) => {
         pub fn $field<T : Into<ID>>(mut self, a : T) -> Self {
@@ -73,13 +72,13 @@ macro_rules! command {
 }
 
 macro_rules! identity_list_command {
-    ($name:ident) => (
+    ($name:ident) => {
         command! {
             pub struct $name {
                     ids: Vec<ID>
             }
         }
-    );
+    };
 }
 
 macro_rules! make_argument_enum {

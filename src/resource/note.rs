@@ -1,12 +1,12 @@
 use serde;
 
+use command;
 use std::fmt;
 use types::*;
-use command;
 use uuid::Uuid;
 
-use serde::{Serialize, Deserialize, Serializer, Deserializer};
 use serde::ser::SerializeSeq;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum UploadState {
@@ -17,14 +17,12 @@ pub enum UploadState {
     Completed,
 }
 
-
 #[derive(Debug, Clone)]
 pub struct Thumbnail {
-    link : String,
-    width : usize,
-    height : usize,
+    link: String,
+    width: usize,
+    height: usize,
 }
-
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
@@ -32,34 +30,34 @@ pub struct Thumbnail {
 /// A Todoist note
 pub struct Note {
     /// The note's unique ID
-    pub id : ID,
+    pub id: ID,
 
     /// The ID of the note's poster
-    pub user_id : ID,
+    pub user_id: ID,
 
     /// The ID of the note the note is attached to
-    pub item_id : ID,
+    pub item_id: ID,
 
     /// The ID of the project this note is a part of
-    pub project_id : ID,
+    pub project_id: ID,
 
     /// The note's text
-    pub content : String,
+    pub content: String,
 
     /// the file attached to this note
-    pub file_attachment : Attachment,
+    pub file_attachment: Attachment,
 
     /// List of user ids to notify
-    pub uids_to_notify : Vec<ID>,
+    pub uids_to_notify: Vec<ID>,
 
     /// whether this note is marked as deleted
-    pub is_deleted : isize,
+    pub is_deleted: isize,
 
     /// whether this note has been marked as archived
-    pub is_archived : isize,
+    pub is_archived: isize,
 
     /// the date that this note was posted
-    pub posting : Date,
+    pub posting: Date,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
@@ -68,30 +66,29 @@ pub struct Note {
 /// A file attachment
 pub struct Attachment {
     /// The attachment's name
-    pub file_name : String,
+    pub file_name: String,
 
     /// The file's size
-    pub file_size : usize,
+    pub file_size: usize,
 
     /// the files MIME type
-    pub file_type : String,
+    pub file_type: String,
 
     /// the url where this file can be found
-    pub file_url : String,
+    pub file_url: String,
 
     /// the file's upload state (pending or complete)
-    pub upload_state : UploadState,
+    pub upload_state: UploadState,
 
     /// small thumbnail
-    pub tn_s : Option<Thumbnail>,
+    pub tn_s: Option<Thumbnail>,
 
     /// medium thumbnail
-    pub tn_m : Option<Thumbnail>,
+    pub tn_m: Option<Thumbnail>,
 
     /// large thumbnail
-    pub tn_l : Option<Thumbnail>,
+    pub tn_l: Option<Thumbnail>,
 }
-
 
 pub struct ProjectNote(Note);
 
@@ -102,7 +99,7 @@ impl Note {
 }
 
 impl<'de> Deserialize<'de> for Thumbnail {
-    fn deserialize<D : Deserializer<'de>>(deserializer: D) -> Result<Thumbnail, D::Error> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Thumbnail, D::Error> {
         struct ThumbnailVisitor;
 
         impl<'de> serde::de::Visitor<'de> for ThumbnailVisitor {
@@ -112,8 +109,11 @@ impl<'de> Deserialize<'de> for Thumbnail {
                 formatter.write_str("an array in the form [string, usize, usize]")
             }
 
-            fn visit_seq<A : serde::de::SeqAccess<'de> >(self, mut value: A) -> Result<Self::Value, A::Error>    {
-                let mut x = Thumbnail{
+            fn visit_seq<A: serde::de::SeqAccess<'de>>(
+                self,
+                mut value: A,
+            ) -> Result<Self::Value, A::Error> {
+                let mut x = Thumbnail {
                     link: "".to_string(),
                     width: 0,
                     height: 0,
@@ -126,7 +126,7 @@ impl<'de> Deserialize<'de> for Thumbnail {
             }
         }
 
-        deserializer.deserialize_seq(ThumbnailVisitor{})
+        deserializer.deserialize_seq(ThumbnailVisitor {})
     }
 }
 
@@ -137,7 +137,7 @@ impl Default for UploadState {
 }
 
 impl Serialize for Thumbnail {
-    fn serialize<S : Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut seq = serializer.serialize_seq(Some(3))?;
         seq.serialize_element(&self.link)?;
         seq.serialize_element(&self.width)?;
@@ -160,8 +160,6 @@ impl Note {
     }
 
     pub fn delete(&self) -> command::note::Delete {
-        command::note::Delete {
-            ids: vec![self.id]
-        }
+        command::note::Delete { ids: vec![self.id] }
     }
 }

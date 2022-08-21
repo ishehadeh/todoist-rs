@@ -1,5 +1,5 @@
-use types::*;
 use super::User;
+use types::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
@@ -51,147 +51,141 @@ pub enum NotificationType {
 /// A Todoist reminder
 pub struct Reminder {
     /// The reminder's unique ID
-    pub id : ID,
+    pub id: ID,
 
     /// The user who should be notified
-    pub notify_uid : ID,
+    pub notify_uid: ID,
 
     /// The item this reminder is attached to
-    pub item_id : ID,
+    pub item_id: ID,
 
-    /// The service used to notify the user. 
-    pub service : NotificationService,
+    /// The service used to notify the user.
+    pub service: NotificationService,
 
     /// The reminder's type
     #[serde(rename = "type")]
-    pub typ : NotificationType,
+    pub typ: NotificationType,
 
     /// When this reminder should be triggered, in free form text
-    pub date_string : Option<String>,
-    
+    pub date_string: Option<String>,
+
     /// the language of `date_string`
-    pub date_lang : Language,
+    pub date_lang: Language,
 
     /// the date this reminder should be triggered, in the `date::FORMAT` format
-    pub due_date_utc : Option<Date>,
+    pub due_date_utc: Option<Date>,
 
     /// the offset in minutes to when the reminder should be triggered
-    pub mm_offset : Option<isize>,
+    pub mm_offset: Option<isize>,
 
     /// the location's name
-    pub name : Option<String>,
+    pub name: Option<String>,
 
     /// the location's latitude
-    pub loc_lat : Option<isize>,
+    pub loc_lat: Option<isize>,
 
     /// the location longitude
-    pub loc_long : Option<isize>,
-    
+    pub loc_long: Option<isize>,
+
     /// when the reminder should be triggered at the location
-    pub loc_trigger : Option<NotificationTrigger>,
+    pub loc_trigger: Option<NotificationTrigger>,
 
     /// the radius around the location that the reminder can be triggered in meters
-    pub radius : Option<isize>,
+    pub radius: Option<isize>,
 
     // if this reminder has been marked as deleted
-    pub is_deleted : isize,
+    pub is_deleted: isize,
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 #[serde(default)]
 pub struct LiveNotification {
     /// this notification's ID
-    pub id : ID,
+    pub id: ID,
 
     /// when this live notification was added (in unix time)
-    pub add : i64,
+    pub add: i64,
 
     /// the user who Add this notification
-    pub from_uid : ID,
+    pub from_uid: ID,
 
     /// unique key for this notification
-    pub notification_key : String,
+    pub notification_key: String,
 
     /// notification sequence number
-    pub seq_no : isize,
+    pub seq_no: isize,
 
     /// whether this notification has been read
-    pub is_unread : isize,
+    pub is_unread: isize,
 
     // -----------------------------------
     // INVITATION PROPERTIES
     // -----------------------------------
-    
     /// the user who is being invited
-    pub from_user : Option<User>,
+    pub from_user: Option<User>,
 
     /// the project name
-    pub project_name : Option<String>,
+    pub project_name: Option<String>,
 
     /// the invitations ID
-    pub invitation_id : Option<ID>,
+    pub invitation_id: Option<ID>,
 
     /// the invitation secret, used for accepting/rejecting it
-    pub invitation_secret : Option<String>,
+    pub invitation_secret: Option<String>,
 
     // -----------------------------------
     // SHARE INVITATION SENT PROPERTIES
     // -----------------------------------
-
     /// the invitation state
-    pub state : Option<String>, // TODO make this an enum
+    pub state: Option<String>, // TODO make this an enum
 
     // -----------------------------------
     // USER REMOVED FROM PROJECT PROPERTIES
     // -----------------------------------
-
     /// the user removed (name)
-    pub removed_name : Option<String>,
+    pub removed_name: Option<String>,
 
     /// the user removed (uid)
-    pub removed_uid : Option<ID>,
+    pub removed_uid: Option<ID>,
 
     // -----------------------------------
     // BUSINESS ACCOUNT PROPERTIES
     // -----------------------------------
-
     /// The number of users in the business
-    pub quantity : Option<isize>,
-    
+    pub quantity: Option<isize>,
+
     /// the tariff plan name, business_monthly or business_yearly
-    pub plan : Option<String>, // TODO make this an enum
-    
+    pub plan: Option<String>, // TODO make this an enum
+
     /// when the business account will be disabled (unix time)
-    pub active_until : Option<i64>,
+    pub active_until: Option<i64>,
 
     // -----------------------------------
     // BUSINESS PAYMENT FAILED PROPERTIES
     // -----------------------------------
-
     /// amount due in hundredths of one unit of currency
-    pub amount_due : Option<isize>,
+    pub amount_due: Option<isize>,
 
     /// the number of previous payment attempts
-    pub attempt_count : Option<isize>,
+    pub attempt_count: Option<isize>,
 
     /// currency, three letter ISO code
-    pub currency : Option<String>,
+    pub currency: Option<String>,
 
     /// invoice description
-    pub description : Option<String>,
+    pub description: Option<String>,
 
     /// next payment attempt date (in unix time)
-    pub next_payment_attempt : Option<i64>,
+    pub next_payment_attempt: Option<i64>,
 
     // -----------------------------------
     // BUSINESS INVITATION PROPERTIES
     // -----------------------------------
-
     /// the invitation's message
-    pub invitation_message : Option<String>,
+    pub invitation_message: Option<String>,
 
     /// the business account's name
-    pub account_name      : Option<String>,
+    pub account_name: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

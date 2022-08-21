@@ -1,5 +1,5 @@
-use types::*;
 use command;
+use types::*;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
@@ -8,25 +8,25 @@ use uuid::Uuid;
 /// A Todoist filter
 pub struct Filter {
     /// The filter's unique ID
-    pub id : ID,
+    pub id: ID,
 
     /// The filter name
-    pub name : String,
+    pub name: String,
 
     /// The filter query
-    pub query : String,
+    pub query: String,
 
     /// The filter's color
-    pub color : Color,
+    pub color: Color,
 
     /// The filter's place in the filter list (lowest is first)
-    pub order : isize,
+    pub order: isize,
 
     /// whether this filter is marked as deleted
-    pub is_deleted : isize,
+    pub is_deleted: isize,
 
     /// whether this filter is marked as a favorite
-    pub is_favorite : isize,
+    pub is_favorite: isize,
 }
 
 impl Filter {
@@ -46,8 +46,6 @@ impl Filter {
     }
 
     pub fn delete(&self) -> command::filter::Delete {
-        command::filter::Delete {
-            ids: vec![self.id]
-        }
+        command::filter::Delete { ids: vec![self.id] }
     }
 }

@@ -1,16 +1,16 @@
-mod user;
+mod filter;
 mod item;
+mod label;
+mod note;
 mod notification;
 mod project;
-mod label;
-mod filter;
-mod note;
+mod user;
 
-pub use self::user::*;
-pub use self::note::*;
-pub use self::label::*;
-pub use self::user::*;
-pub use self::project::*;
-pub use self::notification::*;
-pub use self::item::*;
 pub use self::filter::*;
+pub use self::item::*;
+pub use self::label::*;
+pub use self::note::*;
+pub use self::notification::*;
+pub use self::project::*;
+pub use self::user::*;
+pub use self::user::*;
