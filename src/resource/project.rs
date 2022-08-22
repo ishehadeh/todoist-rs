@@ -1,13 +1,24 @@
 //! Project related structures
 use types::*;
 
-#[derive(Deserialize, Serialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum ViewStyle {
+    #[serde(rename = "list")]
+    List,
+    #[serde(rename = "board")]
+    Board,
+}
+
+const fn get_false() -> bool {
+    false
+}
+
+#[derive(Deserialize, Serialize, Debug, Clone)]
 
 /// A Todoist Project
 pub struct Project {
     /// The project's unique ID
-    pub id: ID,
+    pub id: String,
 
     /// The project's name
     pub name: String,
@@ -15,31 +26,38 @@ pub struct Project {
     /// The project's Color
     pub color: Color,
 
-    /// The project's indent (hierarchy level) is a number between from 1-4
-    pub indent: u8,
+    pub parent_id: Option<String>,
 
-    /// This project's position in the project list, the smallest number should be at the top
-    pub item_order: isize,
+    /// Defines the position of this project within the parent project
+    pub child_order: i32,
 
     /// Whether this project's child's project's children are visible
-    pub collapsed: isize,
+    pub collapsed: bool,
 
     pub shared: bool,
 
     // 1 if this project has been marked as deleted
-    pub is_deleted: isize,
+    pub is_deleted: bool,
 
     // 1 if this project has been marked as archived
-    pub is_archived: isize,
+    pub is_archived: bool,
 
     // 1 if this project has been marked as a favorite
-    pub is_favorite: isize,
+    pub is_favorite: bool,
+
+    /// Shared projects get a unique ID for each user, `sync_id` is the same across all instances of the project.
+    /// `None` if the project is not shared.
+    pub sync_id: Option<String>,
 
     /// True if this project is in the user's inbox
-    pub inbox: bool,
+    #[serde(default = "get_false")]
+    pub inbox_project: bool,
 
     /// True if this project is in the team's inbox
-    pub inbox_team: bool,
+    #[serde(default = "get_false")]
+    pub team_inbox: bool,
+
+    pub view_style: ViewStyle,
 }
 
 #[cfg(test)]
