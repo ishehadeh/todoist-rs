@@ -1,4 +1,3 @@
-use super::NotificationService;
 use chrono::FixedOffset;
 use types::*;
 
