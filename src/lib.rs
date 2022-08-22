@@ -9,7 +9,6 @@ pub mod command;
 mod resource;
 mod types;
 
-pub use cache::*;
 pub use resource::*;
 pub use types::*;
 
