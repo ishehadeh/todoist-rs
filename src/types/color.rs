@@ -1,237 +1,230 @@
+use std::{error::Error, fmt};
+
+use serde::Deserializer;
+use serde::Serializer;
 use serde::{Deserialize, Serialize};
-use std::error::Error;
-use std::str::FromStr;
-use std::string::ToString;
-
-use serde::de;
-use serde::ser;
-
-use std::fmt;
-use std::mem;
-
-/// Colors can be used to organize some Todoist types, like projects and tasks.
-///
-/// Each color is mapped to a number: 0 - 11 for peasants, or 0 - 21 for premium users.
-/// To get a string representation of a color's hex use `Color::to_string()`
-#[derive(Debug, Clone)]
-#[repr(u8)]
-pub enum Color {
-    LightGreen = 0,
-    LightRed,
-    LightOrange,
-    LightYellow,
-    BlueGrey,
-    LightBrown,
-    Pink,
-    LightGrey,
-    Brown,
-    Yellow,
-    Teal,
-    LightBlue,
-    Purple,
-    Red,
-    Orange,
-    Green,
-    Turquoise,
-    DarkTurquoise,
-    Blue,
-    DarkBlue,
-    Black,
-    Grey,
-}
-
-struct ColorVisitor;
 
 #[derive(Clone, Debug)]
-pub struct UnknownColorErr {
-    color: String,
-}
-
-impl<'de> de::Visitor<'de> for ColorVisitor {
-    type Value = Color;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("an integer between 0 and 21")
-    }
-
-    fn visit_i8<E>(self, value: i8) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value < 0 || value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value)) }
-    }
-
-    fn visit_i16<E>(self, value: i16) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value < 0 || value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
-
-    fn visit_i32<E>(self, value: i32) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value < 0 || value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
-
-    fn visit_i64<E>(self, value: i64) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value < 0 || value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
-
-    fn visit_u8<E>(self, value: u8) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value)) }
-    }
-
-    fn visit_u16<E>(self, value: u16) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
-
-    fn visit_u32<E>(self, value: u32) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
-
-    fn visit_u64<E>(self, value: u64) -> Result<Color, E>
-    where
-        E: de::Error,
-    {
-        if value > 21 {
-            return Err(E::custom(format!("color out of range: {}", value)));
-        }
-        unsafe { Ok(mem::transmute(value as u8)) }
-    }
+pub enum UnknownColorErr {
+    Id(i32),
+    Name(String),
 }
 
 impl fmt::Display for UnknownColorErr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Unknown color name \"{}\"", self.color)
+        match self {
+            UnknownColorErr::Name(name) => write!(f, "unknown color name \"{}\"", name),
+            UnknownColorErr::Id(id) => write!(f, "unknown color ID \"{}\" ", id),
+        }
     }
 }
 
 impl Error for UnknownColorErr {
     fn description(&self) -> &'static str {
-        "unknown color name"
+        "unknown color"
     }
 }
 
-impl ToString for Color {
-    fn to_string(&self) -> String {
-        String::from(match self {
-            Color::LightGreen => "#95ef63",
-            Color::LightRed => "#ff8581",
-            Color::LightOrange => "#ffc471",
-            Color::LightYellow => "#f9ec75",
-            Color::BlueGrey => "#a8c8e4",
-            Color::LightBrown => "#d2b8a3",
-            Color::Pink => "#e2a8e4",
-            Color::LightGrey => "#cccccc",
-            Color::Brown => "#fb886e",
-            Color::Yellow => "#ffcc00",
-            Color::Teal => "#74e8d3",
-            Color::LightBlue => "#3bd5fb",
-
-            Color::Purple => "#dc4fad",
-            Color::Red => "#ac193d",
-            Color::Orange => "#d24726",
-            Color::Green => "#82ba00",
-            Color::Turquoise => "#03b3b2",
-            Color::DarkTurquoise => "#008299",
-            Color::DarkBlue => "#5db2ff",
-            Color::Blue => "#0072c6",
-            Color::Black => "#000000",
-            Color::Grey => "#777777",
-        })
-    }
+/// Colors can be used to organize some Todoist types, like projects and tasks.
+///
+/// Colors can be identified 2 ways, through a numeric ID or a name.
+/// Names are the identical to the enum variants, except in snake case (e.g. `BerryRed` -> `berry_red`).
+#[derive(Debug, Clone)]
+pub enum Color {
+    BerryRed,
+    Red,
+    Orange,
+    Yellow,
+    OliveGreen,
+    LimeGreen,
+    Green,
+    MintGreen,
+    Teal,
+    SkyBlue,
+    LightBlue,
+    Blue,
+    Grape,
+    Violet,
+    Lavender,
+    Magenta,
+    Salmon,
+    Charcoal,
+    Grey,
+    Taupe,
 }
 
-impl FromStr for Color {
-    type Err = UnknownColorErr;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let generic = s.to_uppercase().replace(" ", "");
-        match generic.as_str() {
-            "LIGHTGREEN" => Ok(Color::LightGreen),
-            "LIGHTRED" => Ok(Color::LightRed),
-            "LIGHTORANGE" => Ok(Color::LightOrange),
-            "LIGHTYELLOW" => Ok(Color::LightYellow),
-            "BLUEGREY" => Ok(Color::BlueGrey),
-            "LIGHTBROWN" => Ok(Color::LightBrown),
-            "PINK" => Ok(Color::Pink),
-            "LIGHTGREY" => Ok(Color::LightGrey),
-            "BROWN" => Ok(Color::Brown),
-            "YELLOW" => Ok(Color::Yellow),
-            "TEAL" => Ok(Color::Teal),
-            "LIGHTBLUE" => Ok(Color::LightBlue),
-            "PURPLE" => Ok(Color::Purple),
-            "RED" => Ok(Color::Red),
-            "ORANGE" => Ok(Color::Orange),
-            "GREEN" => Ok(Color::Green),
-            "TURQUOISE" => Ok(Color::Turquoise),
-            "DARKTURQUOISE" => Ok(Color::DarkTurquoise),
-            "DARKBLUE" => Ok(Color::DarkBlue),
-            "BLUE" => Ok(Color::Blue),
-            "BLACK" => Ok(Color::Black),
-            "GREY" => Ok(Color::Grey),
-            _ => Err(UnknownColorErr {
-                color: s.to_string(),
-            }),
+macro_rules! gen_color_tables {
+    ($($variant:path => $name:literal $id:literal $hex:literal),+) => {
+        fn from_name<S: AsRef<str>>(id: S) -> Result<Color, UnknownColorErr> {
+            match id.as_ref() {
+                $($name => Ok($variant)),*,
+                s => Err(UnknownColorErr::Name(s.to_string()))
+            }
         }
+
+        fn to_name(&self) -> &'static str {
+            match self {
+                $(&$variant => $name),*
+            }
+        }
+
+        fn to_id(&self) -> i32 {
+            match self {
+                $(&$variant => $id),*
+            }
+        }
+
+
+        fn from_id( id: i32) -> Result<Color, UnknownColorErr> {
+            match id {
+                $($id => Ok($variant)),*,
+                id => Err(UnknownColorErr::Id(id))
+            }
+        }
+
+        fn to_hex(&self) -> &'static str {
+            match self {
+                $(&$variant => $hex),*
+            }
+        }
+    };
+}
+
+impl Color {
+    gen_color_tables! {
+        Color::BerryRed => "berry_red" 30 "#b8256f",
+        Color::Red => "red" 31 "#db4035",
+        Color::Orange => "orange" 32 "#ff9933",
+        Color::Yellow => "yellow" 33 "#fad000",
+        Color::OliveGreen => "olive_green" 34 "#afb83b",
+        Color::LimeGreen => "lime_green" 35 "#7ecc49",
+        Color::Green => "green" 36 "#299438",
+        Color::MintGreen => "mint_green" 37 "#6accbc",
+        Color::Teal => "teal" 38 "#158fad",
+        Color::SkyBlue => "sky_blue" 39 "#14aaf5",
+        Color::LightBlue => "light_blue" 40 "#96c3eb",
+        Color::Blue => "blue" 41 "#4073ff",
+        Color::Grape => "grape" 42 "#884dff",
+        Color::Violet => "violet" 43 "#af38eb",
+        Color::Lavender => "lavender" 44 "#eb96eb",
+        Color::Magenta => "magenta" 45 "#e05194",
+        Color::Salmon => "salmon" 46 "#ff8d85",
+        Color::Charcoal => "charcoal" 47 "#808080",
+        Color::Grey => "grey" 48 "#b8b8b8",
+        Color::Taupe => "taupe" 49 "#ccac93"
+
     }
 }
 
 impl Default for Color {
-    fn default() -> Color {
-        Color::LightGrey
+    fn default() -> Self {
+        Self::Grey
+    }
+}
+
+pub mod serde {
+    use super::Color;
+    use serde::de;
+    use std::fmt;
+
+    struct ColorIDVisitor;
+
+    impl<'de> de::Visitor<'de> for ColorIDVisitor {
+        type Value = Color;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a color ID")
+        }
+
+        fn visit_i8<E: de::Error>(self, value: i8) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_i16<E: de::Error>(self, value: i16) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_i32<E: de::Error>(self, value: i32) -> Result<Color, E> {
+            Color::from_id(value).map_err(|e| E::custom(e))
+        }
+
+        fn visit_i64<E: de::Error>(self, value: i64) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_u8<E: de::Error>(self, value: u8) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_u16<E: de::Error>(self, value: u16) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_u32<E: de::Error>(self, value: u32) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+
+        fn visit_u64<E: de::Error>(self, value: u64) -> Result<Color, E> {
+            Color::from_id(value as i32).map_err(|e| E::custom(e))
+        }
+    }
+
+    struct ColorNameVisitor;
+
+    impl<'de> de::Visitor<'de> for ColorNameVisitor {
+        type Value = Color;
+
+        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+            formatter.write_str("a color name")
+        }
+
+        fn visit_string<E: de::Error>(self, value: String) -> Result<Color, E> {
+            Color::from_name(value).map_err(|e| E::custom(e))
+        }
+
+        fn visit_borrowed_str<E: de::Error>(self, value: &'de str) -> Result<Color, E> {
+            Color::from_name(value).map_err(|e| E::custom(e))
+        }
+    }
+
+    /// Usage: #[serde(with=color::serde::id)]
+    pub mod id {
+        use super::ColorIDVisitor;
+        use crate::Color;
+        use serde::{Deserializer, Serializer};
+
+        pub fn serialize<S: Serializer>(c: &Color, ser: S) -> Result<S::Ok, S::Error> {
+            ser.serialize_i32(c.to_id())
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Color, D::Error> {
+            de.deserialize_i32(ColorIDVisitor)
+        }
+    }
+
+    pub mod name {
+        use super::ColorNameVisitor;
+        use crate::Color;
+        use serde::{Deserializer, Serializer};
+
+        pub fn serialize<S: Serializer>(c: &Color, ser: S) -> Result<S::Ok, S::Error> {
+            ser.serialize_str(c.to_name())
+        }
+
+        pub fn deserialize<'de, D: Deserializer<'de>>(de: D) -> Result<Color, D::Error> {
+            de.deserialize_string(ColorNameVisitor)
+        }
     }
 }
 
 impl Serialize for Color {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: ser::Serializer,
-    {
-        serializer.serialize_u8(self.clone() as u8)
+    fn serialize<S: Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        serde::name::serialize(self, ser)
     }
 }
 
 impl<'de> Deserialize<'de> for Color {
-    fn deserialize<D>(deserializer: D) -> Result<Color, D::Error>
-    where
-        D: de::Deserializer<'de>,
-    {
-        deserializer.deserialize_u8(ColorVisitor)
+    fn deserialize<D: Deserializer<'de>>(de: D) -> Result<Color, D::Error> {
+        serde::name::deserialize(de)
     }
 }
