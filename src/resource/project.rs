@@ -66,3 +66,15 @@ impl Project {
         command::project::Delete { ids: vec![self.id] }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Project;
+    use serde_json;
+    #[test]
+    pub fn deserialize_user() {
+        let _user =
+            serde_json::from_str::<Project>(include_str!("../../test/data/resources/project.json"))
+                .unwrap();
+    }
+}
