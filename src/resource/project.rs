@@ -1,8 +1,5 @@
 //! Project related structures
 use types::*;
-use uuid::Uuid;
-
-use command;
 
 #[derive(Deserialize, Serialize, Default, Debug, Clone)]
 #[serde(default)]
@@ -43,28 +40,6 @@ pub struct Project {
 
     /// True if this project is in the team's inbox
     pub inbox_team: bool,
-}
-
-impl Project {
-    pub fn add() -> command::project::Add {
-        command::project::Add::default()
-    }
-
-    pub fn update(&self) -> command::project::Update {
-        command::project::Update {
-            id: self.id,
-            item_order: self.item_order,
-            is_favorite: self.is_favorite,
-            name: self.name.clone(),
-            color: self.color.clone(),
-            indent: self.indent,
-            collapsed: self.collapsed,
-        }
-    }
-
-    pub fn delete(&self) -> command::project::Delete {
-        command::project::Delete { ids: vec![self.id] }
-    }
 }
 
 #[cfg(test)]
