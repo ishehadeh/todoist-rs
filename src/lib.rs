@@ -4,7 +4,6 @@ extern crate serde;
 extern crate serde_json;
 extern crate uuid;
 
-pub mod cache;
 pub mod command;
 
 mod resource;
@@ -138,10 +137,6 @@ impl<'a> Transaction<'a> {
         });
         self
     }
-
-    pub fn commit(self) -> Result<CommandResponse, types::Error> {
-        self.client.send(self.commands.as_slice())
-    }
 }
 
 impl<'a> Client {
@@ -151,44 +146,6 @@ impl<'a> Client {
             client: reqwest::Client::new(),
             token: String::from(tok),
         }
-    }
-
-    /// Request resources from todoist
-    pub fn sync(
-        &self,
-        sync_token: &str,
-        what: &[ResourceType],
-    ) -> Result<SyncResponse, types::Error> {
-        let res: SyncResponse = self
-            .client
-            .post("http://todoist.com/api/v7/sync")
-            .form(&[
-                ("token", self.token.as_str()),
-                ("sync_token", sync_token),
-                ("resource_types", &serde_json::to_string(what)?),
-            ])
-            .send()?
-            .json()?;
-        Ok(res)
-    }
-
-    /// Send a series of commands to todoist
-    ///
-    /// It is generally prettier and safer to use a transaction, instead of this command.
-    /// See Client::begin()
-    pub fn send(&mut self, cmd: &[command::Command]) -> Result<CommandResponse, types::Error> {
-        println!("{}", serde_json::to_string(cmd)?);
-        let res: CommandResponse = self
-            .client
-            .post("http://todoist.com/api/v7/sync")
-            .form(&[
-                ("token", self.token.clone()),
-                ("commands", serde_json::to_string(cmd)?),
-            ])
-            .send()?
-            .json()?;
-        CommandErrors::check_response(&res)?;
-        Ok(res)
     }
 
     /// Begin the transaction to send a series of commands to Todoist.
