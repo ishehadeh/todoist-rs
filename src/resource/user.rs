@@ -66,19 +66,19 @@ pub struct User {
     pub auto_reminder: i32,
 
     /// URL to the user's avatar, 195x195px
-    pub avatar_big: Option<String>,
+    pub avatar_big: String,
 
     /// URL to the user's avatar, 60x60px
-    pub avatar_medium: Option<String>,
+    pub avatar_medium: String,
 
     /// URL to the user's avatar, 640x640px
-    pub avatar_s640: Option<String>,
+    pub avatar_s640: String,
 
     /// URL to the user's avatar, 35x35px
-    pub avatar_small: Option<String>,
+    pub avatar_small: String,
 
     /// the ID of the user's business account
-    pub business_account_id: Option<String>,
+    pub business_account_id: String,
 
     /// User's target completed daily tasks
     pub daily_goal: i32,
@@ -113,7 +113,7 @@ pub struct User {
     pub id: String,
 
     /// the ID of this user's avatar
-    pub image_id: Option<String>,
+    pub image_id: String,
 
     /// the ID of the user's inbox project
     pub inbox_project_id: String,
