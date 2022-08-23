@@ -75,34 +75,6 @@ pub struct Item {
     pub date_added: Option<Date>,
 }
 
-impl Item {
-    pub fn add() -> command::item::Add {
-        command::item::Add::default()
-    }
-
-    pub fn update(&self) -> command::item::Update {
-        command::item::Update {
-            id: self.id,
-            item_order: self.item_order,
-            content: self.content.clone(),
-            assigned_by_uid: self.assigned_by_uid,
-            collapsed: self.collapsed,
-            date_string: self.date_string.clone(),
-            date_lang: self.date_lang.clone(),
-            day_order: self.day_order,
-            due_date_utc: self.due_date_utc.clone(),
-            indent: self.indent,
-            labels: self.labels.clone(),
-            priority: self.priority,
-            responsible_uid: self.responsible_uid,
-        }
-    }
-
-    pub fn delete(&self) -> command::item::Delete {
-        command::item::Delete { ids: vec![self.id] }
-    }
-}
-
 #[cfg(test)]
 mod test {
     use super::Item;
