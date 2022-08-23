@@ -1,5 +1,6 @@
 use serde;
 
+use std::collections::BTreeMap;
 use std::fmt;
 use types::*;
 
@@ -26,39 +27,36 @@ pub struct Thumbnail {
 /// A Todoist note
 pub struct Note {
     /// The note's unique ID
-    pub id: ID,
+    pub id: String,
 
-    /// The ID of the note's poster
-    pub user_id: ID,
+    pub posted_uid: String,
 
     /// The ID of the note the note is attached to
-    pub item_id: ID,
+    pub item_id: String,
 
-    /// The ID of the project this note is a part of
-    pub project_id: ID,
-
-    /// The note's text
+    /// The note's text, may be formatted as markdown
     pub content: String,
 
     /// the file attached to this note
     pub file_attachment: Attachment,
 
     /// List of user ids to notify
-    pub uids_to_notify: Vec<ID>,
+    pub uids_to_notify: Option<Vec<String>>,
 
-    /// whether this note is marked as deleted
-    pub is_deleted: isize,
-
-    /// whether this note has been marked as archived
-    pub is_archived: isize,
+    /// true if this note is marked as deleted
+    pub is_deleted: bool,
 
     /// the date that this note was posted
-    pub posting: Date,
+    pub posted_at: chrono::DateTime<chrono::Utc>,
+
+    /// Map of emoji reactions to the user ID who reacted with that emoji
+    pub reactions: BTreeMap<String, Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// A file attachment
+// TODO: move Attachment into its own module
 pub struct Attachment {
     /// The attachment's name
     pub file_name: String,
