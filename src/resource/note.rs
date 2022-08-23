@@ -1,9 +1,7 @@
 use serde;
 
-use command;
 use std::fmt;
 use types::*;
-use uuid::Uuid;
 
 use serde::ser::SerializeSeq;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -24,9 +22,7 @@ pub struct Thumbnail {
     height: usize,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
-
+#[derive(Serialize, Deserialize, Debug, Clone)]
 /// A Todoist note
 pub struct Note {
     /// The note's unique ID
@@ -60,8 +56,7 @@ pub struct Note {
     pub posting: Date,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// A file attachment
 pub struct Attachment {
@@ -88,14 +83,6 @@ pub struct Attachment {
 
     /// large thumbnail
     pub tn_l: Option<Thumbnail>,
-}
-
-pub struct ProjectNote(Note);
-
-impl Note {
-    fn project(self) -> ProjectNote {
-        ProjectNote(self)
-    }
 }
 
 impl<'de> Deserialize<'de> for Thumbnail {
@@ -130,12 +117,6 @@ impl<'de> Deserialize<'de> for Thumbnail {
     }
 }
 
-impl Default for UploadState {
-    fn default() -> UploadState {
-        UploadState::Completed
-    }
-}
-
 impl Serialize for Thumbnail {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let mut seq = serializer.serialize_seq(Some(3))?;
@@ -143,24 +124,6 @@ impl Serialize for Thumbnail {
         seq.serialize_element(&self.width)?;
         seq.serialize_element(&self.height)?;
         seq.end()
-    }
-}
-
-impl Note {
-    pub fn add() -> command::note::Add {
-        command::note::Add::default()
-    }
-
-    pub fn update(&self) -> command::note::Update {
-        command::note::Update {
-            id: self.id,
-            content: self.content.clone(),
-            file_attachment: Some(self.file_attachment.clone()),
-        }
-    }
-
-    pub fn delete(&self) -> command::note::Delete {
-        command::note::Delete { ids: vec![self.id] }
     }
 }
 
