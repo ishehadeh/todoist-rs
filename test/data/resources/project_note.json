@@ -1,0 +1,19 @@
+{
+    "content": "Hello 2",
+    "id": "2992679862",
+    "is_deleted": false,
+    "posted_at": "2018-08-14T10:56:50.000000Z",
+    "posted_uid": "2671355",
+    "project_id": "2203306141",
+    "reactions": null,
+    "uids_to_notify": [
+        "2671362"
+    ],
+    "file_attachment": {
+        "file_type": "text/plain",
+        "file_name": "File1.txt",
+        "file_size": 1234,
+        "file_url": "https://example.com/File1.txt",
+        "upload_state": "completed"
+    }
+}

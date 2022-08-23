@@ -31,7 +31,7 @@ pub struct Note {
 
     pub posted_uid: String,
 
-    /// The ID of the note the note is attached to
+    /// The ID of the item this note is attached to
     pub item_id: String,
 
     /// The note's text, may be formatted as markdown
@@ -50,7 +50,37 @@ pub struct Note {
     pub posted_at: chrono::DateTime<chrono::Utc>,
 
     /// Map of emoji reactions to the user ID who reacted with that emoji
-    pub reactions: BTreeMap<String, Vec<String>>,
+    pub reactions: Option<BTreeMap<String, Vec<String>>>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+/// A Todoist note, attached to a project instead of an item
+pub struct ProjectNote {
+    /// The note's unique ID
+    pub id: String,
+
+    pub posted_uid: String,
+
+    /// The ID of the project the note is attached to
+    pub project_id: String,
+
+    /// The note's text, may be formatted as markdown
+    pub content: String,
+
+    /// the file attached to this note
+    pub file_attachment: Attachment,
+
+    /// List of user ids to notify
+    pub uids_to_notify: Option<Vec<String>>,
+
+    /// true if this note is marked as deleted
+    pub is_deleted: bool,
+
+    /// the date that this note was posted
+    pub posted_at: chrono::DateTime<chrono::Utc>,
+
+    /// Map of emoji reactions to the user ID who reacted with that emoji
+    pub reactions: Option<BTreeMap<String, Vec<String>>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -127,7 +157,7 @@ impl Serialize for Thumbnail {
 
 #[cfg(test)]
 mod test {
-    use super::Note;
+    use super::{Note, ProjectNote};
     use serde_json;
 
     #[test]
@@ -135,5 +165,13 @@ mod test {
         let _user =
             serde_json::from_str::<Note>(include_str!("../../test/data/resources/note.json"))
                 .unwrap();
+    }
+
+    #[test]
+    pub fn deserialize_project_note() {
+        let _user = serde_json::from_str::<ProjectNote>(include_str!(
+            "../../test/data/resources/project_note.json"
+        ))
+        .unwrap();
     }
 }
