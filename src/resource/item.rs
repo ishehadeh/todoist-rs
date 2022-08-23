@@ -102,3 +102,16 @@ impl Item {
         command::item::Delete { ids: vec![self.id] }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Item;
+    use serde_json;
+
+    #[test]
+    pub fn deserialize_item() {
+        let _user =
+            serde_json::from_str::<Item>(include_str!("../../test/data/resources/item.json"))
+                .unwrap();
+    }
+}
