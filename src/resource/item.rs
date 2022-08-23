@@ -1,78 +1,71 @@
-use command;
+use chrono::Utc;
 use types::*;
-use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// A Todoist task item
 pub struct Item {
     /// The item's unique ID
-    pub id: ID,
+    pub id: String,
 
     /// The ID of the item's owner
-    pub user_id: ID,
+    pub user_id: String,
 
     /// The ID of the project this item belongs to
-    pub project_id: ID,
+    pub project_id: String,
 
-    /// This item's text, not (e.g. "Do the dishes")
-    pub content: Option<String>,
+    /// A short description of the task (e.g. "Do the dishes")
+    pub content: String,
 
-    /// The date for this TODO
-    /// examples: "every other day", "tomorrow", "today at 9am"
-    pub date_string: Option<String>,
+    /// A longer description of the task
+    pub description: String,
 
-    /// The date_string's language
-    pub date_lang: Option<Language>,
-
-    /// The date this TODO is due, or none
-    pub due_date_utc: Option<Date>,
+    /// A string describing when this task is due
+    /// See [Due Dates](https://web.archive.org/web/20220805200101/https://developer.todoist.com/sync/v9/#clear-locations) reference for details.
+    pub due: Option<String>,
 
     /// this item's importance
     pub priority: Priority,
 
-    /// this item's indent
-    pub indent: u8,
+    /// the parent item ID, if this item is a child
+    pub parent_id: Option<String>,
 
-    /// This item's position in the item list, the smallest number should be at the top
-    pub item_order: isize,
+    /// The position of this child among its siblings
+    pub child_order: Option<isize>,
+
+    /// The section this item belongs to if any
+    pub section_id: Option<String>,
+
+    /// if this item's children should be hidden
+    pub collapsed: bool,
 
     /// This item's position in the "Today" or "Next 7 Days" list, the smallest number should be at the top
     pub day_order: isize,
 
-    /// 0 if this item's children should be hidden
-    pub collapsed: isize,
-
-    /// a list of label id's for the labels attached to this item
-    pub labels: Vec<ID>,
+    /// a list of label names assigned to this task
+    pub labels: Vec<String>,
 
     /// The user ID of the user who added this item
-    pub assigned_by_uid: Option<ID>,
+    pub added_by_uid: Option<String>,
+
+    /// The user ID of the user who assigned the task
+    pub assigned_by_uid: Option<String>,
 
     /// The user ID of the user who is assigned this task
-    pub responsible_uid: Option<ID>,
+    pub responsible_uid: Option<String>,
 
-    /// 1 if this task has been completed
-    pub checked: isize,
+    /// true if this task has been completed
+    pub checked: bool,
 
-    // 1 if this item has been marked as as completely completed (all child tasks have also been completed)
-    pub in_history: isize,
+    // true if this item has been marked as deleted
+    pub is_deleted: bool,
 
-    // 1 if this item has been marked as deleted
-    pub is_deleted: isize,
+    /// Universal ID for tasks within shared projects, `Item::id` is per-user
+    pub sync_id: Option<String>,
 
-    // 1 if this item has been marked as archived
-    pub is_archived: isize,
+    pub completed_at: Option<chrono::DateTime<Utc>>,
 
-    // 1 if this item has been marked as a favorite
-    pub is_favorite: isize,
-
-    /// used internally by Todoist, here for completeness
-    pub sync_id: Option<isize>,
-
-    /// when this item was added
-    pub date_added: Option<Date>,
+    pub added_at: Option<chrono::DateTime<Utc>>,
 }
 
 #[cfg(test)]
