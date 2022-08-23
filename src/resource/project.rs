@@ -65,7 +65,7 @@ mod test {
     use super::Project;
     use serde_json;
     #[test]
-    pub fn deserialize_user() {
+    pub fn deserialize_project() {
         let _user =
             serde_json::from_str::<Project>(include_str!("../../test/data/resources/project.json"))
                 .unwrap();
