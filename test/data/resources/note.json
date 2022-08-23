@@ -1,0 +1,25 @@
+{
+    "id": "2992679862",
+    "posted_uid": "2671355",
+    "item_id": "2995104339",
+    "content": "Note",
+    "file_attachment": {
+        "file_type": "text/plain",
+        "file_name": "File1.txt",
+        "file_size": 1234,
+        "file_url": "https://example.com/File1.txt",
+        "upload_state": "completed"
+    },
+    "uids_to_notify": null,
+    "is_deleted": false,
+    "posted_at": "2014-10-01T14:54:55.000000Z",
+    "reactions": {
+        "❤️": [
+            "2671362"
+        ],
+        "👍": [
+            "2671362",
+            "2671366"
+        ]
+    }
+}

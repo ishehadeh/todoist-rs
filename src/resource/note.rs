@@ -163,3 +163,16 @@ impl Note {
         command::note::Delete { ids: vec![self.id] }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Note;
+    use serde_json;
+
+    #[test]
+    pub fn deserialize_note() {
+        let _user =
+            serde_json::from_str::<Note>(include_str!("../../test/data/resources/note.json"))
+                .unwrap();
+    }
+}
