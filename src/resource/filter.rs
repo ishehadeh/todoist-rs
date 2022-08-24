@@ -49,3 +49,15 @@ impl Filter {
         command::filter::Delete { ids: vec![self.id] }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Filter;
+    use serde_json;
+    #[test]
+    pub fn deserialize_filter() {
+        let _ =
+            serde_json::from_str::<Filter>(include_str!("../../test/data/resources/filter.json"))
+                .unwrap();
+    }
+}
