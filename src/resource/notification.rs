@@ -47,45 +47,53 @@ pub enum NotificationType {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, serde(deny_unknown_fields))]
+pub struct DueDate {
+    /// Due date, or the due date of the next iteration if is_recurring is true
+    // TODO: handle floating and date-only due dates
+    date: chrono::DateTime<chrono::Utc>,
+
+    timezone: Option<String>,
+
+    /// Human-reable due date, e.g. "every day"
+    string: String,
+
+    lang: String,
+
+    is_recurring: bool,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A Todoist reminder
 pub struct Reminder {
     /// The reminder's unique ID
-    pub id: ID,
+    pub id: String,
 
     /// The user who should be notified
-    pub notify_uid: ID,
+    pub notify_uid: String,
 
     /// The item this reminder is attached to
-    pub item_id: ID,
-
-    /// The service used to notify the user.
-    pub service: NotificationService,
+    pub item_id: String,
 
     /// The reminder's type
     #[serde(rename = "type")]
     pub typ: NotificationType,
 
-    /// When this reminder should be triggered, in free form text
-    pub date_string: Option<String>,
-
-    /// the language of `date_string`
-    pub date_lang: Language,
-
-    /// the date this reminder should be triggered, in the `date::FORMAT` format
-    pub due_date_utc: Option<Date>,
+    /// When this reminder should be triggered
+    pub due: Option<DueDate>,
 
     /// the offset in minutes to when the reminder should be triggered
-    pub mm_offset: Option<isize>,
+    pub mm_offset: isize,
 
     /// the location's name
     pub name: Option<String>,
 
     /// the location's latitude
-    pub loc_lat: Option<isize>,
+    pub loc_lat: Option<String>,
 
     /// the location longitude
-    pub loc_long: Option<isize>,
+    pub loc_long: Option<String>,
 
     /// when the reminder should be triggered at the location
     pub loc_trigger: Option<NotificationTrigger>,
