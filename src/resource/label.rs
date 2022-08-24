@@ -5,7 +5,7 @@ use types::*;
 /// A Todoist label (premium users only)
 pub struct Label {
     /// The label's ID
-    pub id: ID,
+    pub id: String,
 
     /// The label's name
     pub name: String,
@@ -16,10 +16,11 @@ pub struct Label {
     /// This label's position in the label list, the smallest number should be at the top
     pub item_order: isize,
 
-    // 1 if this label has been marked as deleted
-    pub is_deleted: isize,
-    // 1 if this label has been marked as a favorite
-    pub is_favorite: isize,
+    // true if this label has been marked as deleted
+    pub is_deleted: bool,
+
+    // true if this label has been marked as a favorite
+    pub is_favorite: bool,
 }
 
 #[cfg(test)]
