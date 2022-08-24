@@ -1,6 +1,4 @@
-use command;
 use types::*;
-use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Default, Debug, Clone)]
 #[serde(default)]
@@ -27,27 +25,6 @@ pub struct Filter {
 
     /// whether this filter is marked as a favorite
     pub is_favorite: isize,
-}
-
-impl Filter {
-    pub fn add() -> command::filter::Add {
-        command::filter::Add::default()
-    }
-
-    pub fn update(&self) -> command::filter::Update {
-        command::filter::Update {
-            id: self.id,
-            item_order: self.order,
-            is_favorite: self.is_favorite,
-            name: self.name.clone(),
-            query: self.query.clone(),
-            color: self.color.clone(),
-        }
-    }
-
-    pub fn delete(&self) -> command::filter::Delete {
-        command::filter::Delete { ids: vec![self.id] }
-    }
 }
 
 #[cfg(test)]
