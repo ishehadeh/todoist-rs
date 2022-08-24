@@ -1,7 +1,7 @@
 use types::*;
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A Todoist filter
 pub struct Filter {
