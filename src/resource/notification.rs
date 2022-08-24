@@ -45,8 +45,8 @@ pub enum NotificationType {
     Location,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A Todoist reminder
 pub struct Reminder {
@@ -248,5 +248,18 @@ impl Default for NotificationService {
 impl Default for NotificationType {
     fn default() -> NotificationType {
         NotificationType::None
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::Reminder;
+    use serde_json;
+    #[test]
+    pub fn deserialize_reminder() {
+        let _ = serde_json::from_str::<Reminder>(include_str!(
+            "../../test/data/resources/reminder.json"
+        ))
+        .unwrap();
     }
 }
