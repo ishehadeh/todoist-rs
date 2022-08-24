@@ -1,6 +1,7 @@
 use types::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A Todoist label (premium users only)
 pub struct Label {

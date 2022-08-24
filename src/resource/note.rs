@@ -24,6 +24,7 @@ pub struct Thumbnail {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 /// A Todoist note
 pub struct Note {
     /// The note's unique ID
@@ -54,6 +55,7 @@ pub struct Note {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 /// A Todoist note, attached to a project instead of an item
 pub struct ProjectNote {
     /// The note's unique ID
@@ -84,6 +86,7 @@ pub struct ProjectNote {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A file attachment
 // TODO: move Attachment into its own module

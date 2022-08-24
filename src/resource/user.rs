@@ -58,6 +58,7 @@ pub struct Features {
     restriction: i32,
 }
 #[derive(Serialize, Deserialize, Debug)]
+#[cfg_attr(test, serde(deny_unknown_fields))]
 
 /// A Todoist user
 /// [API Reference](https://web.archive.org/web/20220821131827/https://developer.todoist.com/sync/v9#user)

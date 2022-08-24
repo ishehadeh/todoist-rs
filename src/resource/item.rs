@@ -2,7 +2,7 @@ use chrono::Utc;
 use types::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
-
+#[cfg_attr(test, serde(deny_unknown_fields))]
 /// A Todoist task item
 pub struct Item {
     /// The item's unique ID
