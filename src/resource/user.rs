@@ -143,6 +143,9 @@ pub struct User {
     /// when this user's premium ends
     pub premium_until: Option<String>,
 
+    /// undocumented field, only appears in the example
+    pub share_limit: isize,
+
     /// the order to sort items, newest first (1), or oldest first (0)
     pub sort_order: isize,
 
@@ -168,6 +171,10 @@ pub struct User {
 
     /// the day where tasks scheduled for the "Weekend" are placed, from Monday (1) to Sunday(7)
     pub weekend_start_day: i32,
+
+    /// Undocumented field, only appears in the example.
+    /// I assume its the number of tasks the user aims to complete each week
+    pub weekly_goal: i32,
 
     /// email verification status
     pub verification_status: VerificationStatus,
