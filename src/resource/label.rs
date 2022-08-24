@@ -44,3 +44,16 @@ impl Label {
         command::label::Delete { ids: vec![self.id] }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::Label;
+    use serde_json;
+
+    #[test]
+    pub fn deserialize_label() {
+        let _user =
+            serde_json::from_str::<Label>(include_str!("../../test/data/resources/label.json"))
+                .unwrap();
+    }
+}
