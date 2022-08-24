@@ -1,9 +1,6 @@
-use command;
 use types::*;
-use uuid::Uuid;
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 
 /// A Todoist label (premium users only)
 pub struct Label {
@@ -23,26 +20,6 @@ pub struct Label {
     pub is_deleted: isize,
     // 1 if this label has been marked as a favorite
     pub is_favorite: isize,
-}
-
-impl Label {
-    pub fn add() -> command::label::Add {
-        command::label::Add::default()
-    }
-
-    pub fn update(&self) -> command::label::Update {
-        command::label::Update {
-            id: self.id,
-            item_order: self.item_order,
-            is_favorite: self.is_favorite,
-            name: self.name.clone(),
-            color: self.color.clone(),
-        }
-    }
-
-    pub fn delete(&self) -> command::label::Delete {
-        command::label::Delete { ids: vec![self.id] }
-    }
 }
 
 #[cfg(test)]
