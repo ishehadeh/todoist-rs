@@ -6,7 +6,7 @@ use types::*;
 /// A Todoist filter
 pub struct Filter {
     /// The filter's unique ID
-    pub id: ID,
+    pub id: String,
 
     /// The filter name
     pub name: String,
@@ -18,13 +18,13 @@ pub struct Filter {
     pub color: Color,
 
     /// The filter's place in the filter list (lowest is first)
-    pub order: isize,
+    pub item_order: isize,
 
     /// whether this filter is marked as deleted
-    pub is_deleted: isize,
+    pub is_deleted: bool,
 
     /// whether this filter is marked as a favorite
-    pub is_favorite: isize,
+    pub is_favorite: bool,
 }
 
 #[cfg(test)]
