@@ -1,4 +1,8 @@
+use std::fmt;
+
 use super::User;
+use chrono::{TimeZone, Utc};
+use serde::de;
 use types::*;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -45,12 +49,75 @@ pub enum NotificationType {
     Location,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DueDateType {
+    Date(chrono::NaiveDate),
+    Floating(chrono::NaiveDateTime),
+    Fixed(chrono::DateTime<Utc>),
+}
+
+impl DueDateType {
+    pub fn parse(s: &str) -> Result<DueDateType, chrono::ParseError> {
+        if s.find("T").is_some() {
+            if s.ends_with("Z") {
+                chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.fZ")
+                    .map(|v| DueDateType::Fixed(chrono::Utc.from_utc_datetime(&v)))
+            } else {
+                chrono::NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f")
+                    .map(|v| DueDateType::Floating(v))
+            }
+        } else {
+            chrono::NaiveDate::parse_from_str(s, "%Y-%m-%d").map(|v| DueDateType::Date(v))
+        }
+    }
+}
+
+struct DueDateDateVisitor;
+
+impl<'de> de::Visitor<'de> for DueDateDateVisitor {
+    type Value = DueDateType;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("a date, with an optional time")
+    }
+
+    fn visit_string<E: de::Error>(self, value: String) -> Result<DueDateType, E> {
+        DueDateType::parse(&value).map_err(|e| E::custom(e))
+    }
+
+    fn visit_borrowed_str<E: de::Error>(self, value: &'de str) -> Result<DueDateType, E> {
+        DueDateType::parse(value).map_err(|e| E::custom(e))
+    }
+}
+
+impl fmt::Display for DueDateType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DueDateType::Date(d) => write!(f, "{}", d.format("%Y-%m-%d")),
+            DueDateType::Floating(d) => write!(f, "{}", d.format("%Y-%m-%dT%H:%M:%S%.6f")),
+            DueDateType::Fixed(d) => write!(f, "{}", d.format("%Y-%m-%dT%H:%M:%S%.6fZ")),
+        }
+    }
+}
+
+impl serde::Serialize for DueDateType {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        ser.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> serde::Deserialize<'de> for DueDateType {
+    fn deserialize<D: serde::Deserializer<'de>>(de: D) -> Result<DueDateType, D::Error> {
+        de.deserialize_string(DueDateDateVisitor)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, serde(deny_unknown_fields))]
 pub struct DueDate {
     /// Due date, or the due date of the next iteration if is_recurring is true
     // TODO: handle floating and date-only due dates
-    date: chrono::DateTime<chrono::Utc>,
+    date: DueDateType,
 
     timezone: Option<String>,
 
@@ -261,8 +328,39 @@ impl Default for NotificationType {
 
 #[cfg(test)]
 mod test {
-    use super::Reminder;
+    use super::{DueDate, DueDateType, Reminder};
+    use chrono::TimeZone;
     use serde_json;
+
+    #[test]
+    pub fn deserialize_due_dates() {
+        let dues =
+            serde_json::from_str::<Vec<DueDate>>(include_str!("../../test/data/due_date.json"))
+                .unwrap();
+        assert_eq!(dues.len(), 3);
+        assert_eq!(dues[0].date.to_string(), "2016-12-01");
+        assert_eq!(dues[1].date.to_string(), "2016-12-06T12:00:00.000000");
+        assert_eq!(dues[2].date.to_string(), "2016-12-06T13:00:00.000000Z");
+    }
+
+    #[test]
+    pub fn parse_due_dates() {
+        let date = chrono::NaiveDate::from_ymd(2022, 8, 28);
+        let time = chrono::NaiveTime::from_hms_nano(14, 6, 29, 0);
+        assert_eq!(
+            DueDateType::parse("2022-08-28").unwrap(),
+            DueDateType::Date(date)
+        );
+        assert_eq!(
+            DueDateType::parse("2022-08-28T14:06:29.000000").unwrap(),
+            DueDateType::Floating(date.and_time(time))
+        );
+        assert_eq!(
+            DueDateType::parse("2022-08-28T14:06:29.000000Z").unwrap(),
+            DueDateType::Fixed(chrono::Utc.from_utc_datetime(&date.and_time(time)))
+        );
+    }
+
     #[test]
     pub fn deserialize_reminder() {
         let _ = serde_json::from_str::<Reminder>(include_str!(

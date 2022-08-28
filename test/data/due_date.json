@@ -1,0 +1,23 @@
+[
+    {
+        "date": "2016-12-01",
+        "timezone": null,
+        "string": "every day",
+        "lang": "en",
+        "is_recurring": true
+    },
+    {
+        "date": "2016-12-06T12:00:00.000000",
+        "timezone": null,
+        "string": "every day at 12",
+        "lang": "en",
+        "is_recurring": true
+    },
+    {
+        "date": "2016-12-06T13:00:00.000000Z",
+        "timezone": "Europe/Madrid",
+        "string": "ev day at 2pm",
+        "lang": "en",
+        "is_recurring": true
+    }
+]
