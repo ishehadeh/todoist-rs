@@ -6,10 +6,10 @@ extern crate uuid;
 
 pub mod command;
 
-mod resource;
+mod models;
 mod types;
 
-pub use resource::*;
+pub use models::*;
 pub use types::*;
 
 use std::collections::HashMap;
@@ -21,14 +21,14 @@ extern crate serde_derive;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Resource {
-    Label(resource::Label),
-    Project(resource::Project),
-    Item(resource::Item),
-    Note(resource::Note),
-    Filter(resource::Filter),
-    User(resource::User),
-    Collaborator(resource::Collaborator),
-    LiveNotification(resource::LiveNotification),
+    Label(models::Label),
+    Project(models::Project),
+    Item(models::Item),
+    Note(models::Note),
+    Filter(models::Filter),
+    User(models::User),
+    Collaborator(models::Collaborator),
+    LiveNotification(models::LiveNotification),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -102,15 +102,15 @@ pub struct CommandErrors {
 pub struct SyncResponse {
     pub sync_token: String,
     pub full_sync: bool,
-    pub items: Option<Vec<resource::Item>>,
-    pub labels: Option<Vec<resource::Label>>,
-    pub projects: Option<Vec<resource::Project>>,
-    pub collaborators: Option<Vec<resource::Collaborator>>,
-    pub notes: Option<Vec<resource::Note>>,
-    pub filters: Option<Vec<resource::Filter>>,
-    pub live_notifications: Option<Vec<resource::LiveNotification>>,
-    pub reminders: Option<Vec<resource::Reminder>>,
-    pub user: Option<resource::User>,
+    pub items: Option<Vec<models::Item>>,
+    pub labels: Option<Vec<models::Label>>,
+    pub projects: Option<Vec<models::Project>>,
+    pub collaborators: Option<Vec<models::Collaborator>>,
+    pub notes: Option<Vec<models::Note>>,
+    pub filters: Option<Vec<models::Filter>>,
+    pub live_notifications: Option<Vec<models::LiveNotification>>,
+    pub reminders: Option<Vec<models::Reminder>>,
+    pub user: Option<models::User>,
 }
 
 /// Client to make request to the todoist API

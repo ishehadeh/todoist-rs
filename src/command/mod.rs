@@ -110,7 +110,7 @@ pub mod label {
 }
 
 pub mod note {
-    use resource::Attachment;
+    use models::Attachment;
     use types::*;
 
     command! {
