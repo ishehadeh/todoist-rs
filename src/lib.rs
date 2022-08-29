@@ -6,9 +6,11 @@ extern crate uuid;
 
 pub mod command;
 
+mod error;
 mod models;
 mod types;
 
+pub use error::*;
 pub use models::*;
 pub use types::*;
 

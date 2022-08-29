@@ -1,8 +1,6 @@
 mod date;
-mod error;
 
 pub use self::date::{Date, TimeZoneInfo};
-pub use self::error::Error;
 
 /// A 2 character language ID
 /// valid ids: `en`, `da`, `pl`, `zh`, `ko`, `de`, `pt`, `ja`, `it`, `fr`, `sv`, `ru`, `es`, `nl`
