@@ -1,5 +1,5 @@
 //! Project related structures
-use types::*;
+use super::Color;
 
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum ViewStyle {

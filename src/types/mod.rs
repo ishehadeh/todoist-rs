@@ -1,8 +1,6 @@
-pub mod color;
 mod date;
 mod error;
 
-pub use self::color::Color;
 pub use self::date::{Date, TimeZoneInfo};
 pub use self::error::Error;
 

@@ -1,10 +1,10 @@
-use types::ID;
 use uuid::Uuid;
 #[macro_use]
 mod macros;
 
 pub mod filter {
-    use types::{Color, ID};
+    use models::Color;
+    use types::ID;
 
     command! {
         pub struct Add {
@@ -85,6 +85,7 @@ pub mod item {
 }
 
 pub mod label {
+    use models::Color;
     use types::*;
 
     command! {
@@ -135,6 +136,7 @@ pub mod note {
 }
 
 pub mod project {
+    use models::Color;
     use types::*;
 
     command! {

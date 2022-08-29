@@ -1,4 +1,4 @@
-use types::*;
+use super::Color;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(test, serde(deny_unknown_fields))]
